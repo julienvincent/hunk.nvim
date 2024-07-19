@@ -1,0 +1,207 @@
+local signs = require("difftool.api.signs")
+local config = require("difftool.config")
+local utils = require("difftool.utils")
+
+local NuiTree = require("nui.tree")
+local Text = require("nui.text")
+local Line = require("nui.line")
+
+local function get_file_extension(path)
+  local extension = path:match("^.+(%..+)$")
+  if not extension then
+    return ""
+  end
+  return string.sub(extension, 2) or ""
+end
+
+local function split_path(path)
+  local parts = {}
+  for part in string.gmatch(path, "([^/]+)") do
+    table.insert(parts, part)
+  end
+  return parts
+end
+
+local function insert_path(tree, change)
+  local parts = split_path(change.filepath)
+  local node = tree
+  for i, part in ipairs(parts) do
+    local is_last = i == #parts
+    local found = false
+
+    for _, child in ipairs(node.children) do
+      if child.name == part and child.type == "dir" then
+        node = child
+        found = true
+        break
+      end
+    end
+
+    if not found then
+      local new_node = {
+        name = part,
+        type = is_last and "file" or "dir",
+        change = change,
+        children = {},
+      }
+      table.insert(node.children, new_node)
+      node = new_node
+    end
+  end
+end
+
+local function build_file_tree(changeset)
+  local tree = { children = {} }
+  for _, change in pairs(changeset) do
+    insert_path(tree, change)
+  end
+  return tree.children
+end
+
+local function file_tree_to_nodes(file_tree)
+  return vim.tbl_map(function(node)
+    local line = {}
+
+    if node.type == "file" then
+      local path = node.change.filepath
+      local icon = require("nvim-web-devicons").get_icon(path, get_file_extension(path), {})
+      if icon then
+        table.insert(line, Text(icon .. " "))
+      end
+    end
+
+    local highlight = "Blue"
+    if node.type == "dir" then
+      highlight = "Green"
+    end
+    table.insert(line, Text(node.name, highlight))
+
+    local children = file_tree_to_nodes(node.children)
+
+    local ui_node = NuiTree.Node({
+      line = line,
+      change = node.change,
+      type = node.type,
+    }, children)
+    ui_node:expand()
+    return ui_node
+  end, file_tree)
+end
+
+local function apply_signs(tree, buf, nodes)
+  nodes = nodes or tree:get_nodes()
+  for _, node in pairs(nodes) do
+    if node.type == "file" then
+      if type(node) ~= "table" then
+        node = tree:get_node(node)
+      end
+      local _, linenr = tree:get_node(node:get_id())
+      if linenr then
+        local sign
+        if node.change.selected then
+          sign = signs.signs.selected
+        else
+          sign = signs.signs.deselected
+        end
+        signs.place_sign(buf, sign, linenr)
+      end
+    else
+      apply_signs(
+        tree,
+        buf,
+        vim.tbl_map(function(id)
+          return tree:get_node(id)
+        end, node:get_child_ids())
+      )
+    end
+  end
+end
+
+local M = {}
+
+function M.create(opts)
+  local tree = NuiTree({
+    winid = opts.winid,
+    nodes = {},
+
+    prepare_node = function(node)
+      local line = Line()
+
+      line:append(string.rep("  ", node:get_depth() - 1))
+
+      if node:has_children() then
+        if node:is_expanded() then
+          line:append(" ", "Comment")
+        else
+          line:append(" ", "Comment")
+        end
+      else
+        line:append("  ")
+      end
+
+      for _, text in ipairs(node.line) do
+        line:append(text)
+      end
+
+      return line
+    end,
+  })
+
+  local buf = vim.api.nvim_win_get_buf(opts.winid)
+
+  local Component = {
+    buf = buf,
+  }
+
+  function Component.render()
+    tree:render()
+    apply_signs(tree, buf)
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.tree.open_file)) do
+    vim.keymap.set("n", chord, function()
+      local node = tree:get_node()
+      if node.type == "file" then
+        opts.on_open(node.change)
+      end
+    end, { buffer = buf })
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.tree.expand_node)) do
+    vim.keymap.set("n", chord, function()
+      local node = tree:get_node()
+      if node.type == "file" then
+        opts.on_preview(node.change)
+      end
+      if node.type == "dir" and not node:is_expanded() then
+        node:expand()
+        Component.render()
+      end
+    end, { buffer = buf })
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.tree.collapse_node)) do
+    vim.keymap.set("n", chord, function()
+      local node = tree:get_node()
+      if node.type == "dir" and node:is_expanded() then
+        node:collapse()
+        Component.render()
+      end
+    end, { buffer = buf })
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.tree.toggle_file)) do
+    vim.keymap.set("n", chord, function()
+      local node = tree:get_node()
+      if node.type == "file" then
+        opts.on_toggle(node.change)
+      end
+    end, { buffer = buf })
+  end
+
+  tree:set_nodes(file_tree_to_nodes(build_file_tree(opts.changeset)))
+
+  return Component
+end
+
+return M
