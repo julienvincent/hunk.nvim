@@ -62,34 +62,36 @@ function M.load_changeset(left, right)
   return changeset, files
 end
 
+local function write_change(change, output_dir)
+  local any_selected = utils.any_lines_selected(change)
+  local output_file = output_dir .. "/" .. change.filepath
+
+  if change.type == "deleted" and not change.selected and not any_selected then
+    vim.fn.system("cp " .. change.left_filepath .. " " .. output_file)
+    return
+  end
+
+  if change.selected and change.type ~= "deleted" then
+    vim.fn.system("cp " .. change.right_filepath .. " " .. output_file)
+    return
+  end
+
+  if any_selected then
+    local left_file_content = fs.read_file_as_lines(change.left_filepath)
+    local right_file_content = fs.read_file_as_lines(change.right_filepath)
+    local result = diff.apply_diff(left_file_content, right_file_content, change)
+    fs.write_file(output_dir .. "/" .. change.filepath, result)
+    return
+  end
+
+  vim.fn.system("rm " .. output_file)
+end
+
 function M.write_changeset(changeset, output_dir)
   vim.fn.mkdir(output_dir, "p")
 
   for _, change in pairs(changeset) do
-    local any_selected = utils.any_lines_selected(change)
-    local output_file = output_dir .. "/" .. change.filepath
-
-    if change.type == "deleted" and not change.selected and not any_selected then
-      -- copy file from left to output
-      vim.fn.system("cp " .. change.left_filepath .. " " .. output_file)
-    elseif change.type ~= "deleted" and change.selected then
-      -- copy file from right to output
-      vim.fn.system("cp " .. change.right_filepath .. " " .. output_file)
-    elseif change.type == "deleted" and utils.all_lines_selected(change) then
-      vim.fn.system("rm " .. output_file)
-    elseif any_selected then
-      local left_file_content = fs.read_file_as_lines(change.left_filepath)
-      local right_file_content = fs.read_file_as_lines(change.right_filepath)
-      local result = diff.apply_diff(left_file_content, right_file_content, change)
-      fs.write_file(output_dir .. "/" .. change.filepath, result)
-      return
-    else
-      if change.type == "added" then
-        vim.fn.system("rm " .. output_file)
-      else
-        vim.fn.system("cp " .. change.left_filepath .. " " .. output_file)
-      end
-    end
+    write_change(change, output_dir)
   end
 end
 
