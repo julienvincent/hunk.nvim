@@ -1,5 +1,5 @@
 local fixtures = require("tests.utils.fixtures")
-local api = require("difftool.api")
+local api = require("hunk.api")
 
 describe("diff patching", function()
   fixtures.with_workspace(function(workspace)

@@ -12,17 +12,17 @@ function M.define_highlights()
     link = true,
   })
 
-  vim.api.nvim_set_hl(0, "DiffToolDiffAddAsDelete", {
+  vim.api.nvim_set_hl(0, "HunkDiffAddAsDelete", {
     bg = string.format("#%06x", diff_delete_highlight.bg),
   })
 
-  vim.api.nvim_set_hl(0, "DiffToolDiffDeleteDim", {
+  vim.api.nvim_set_hl(0, "HunkDiffDeleteDim", {
     default = true,
     link = "Comment",
   })
 
-  vim.api.nvim_set_hl(0, "DiffToolDiffDelete", {
-    link = "DiffToolDiffDeleteDim",
+  vim.api.nvim_set_hl(0, "HunkDiffDelete", {
+    link = "HunkDiffDeleteDim",
   })
 end
 

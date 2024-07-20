@@ -1,6 +1,6 @@
-local config = require("difftool.config")
-local utils = require("difftool.utils")
-local api = require("difftool.api")
+local config = require("hunk.config")
+local utils = require("hunk.utils")
+local api = require("hunk.api")
 
 local M = {}
 

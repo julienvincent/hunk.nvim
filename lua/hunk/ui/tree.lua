@@ -1,6 +1,6 @@
-local signs = require("difftool.api.signs")
-local config = require("difftool.config")
-local utils = require("difftool.utils")
+local signs = require("hunk.api.signs")
+local config = require("hunk.config")
+local utils = require("hunk.utils")
 
 local NuiTree = require("nui.tree")
 local Text = require("nui.text")
@@ -132,9 +132,6 @@ local function apply_signs(tree, buf, nodes)
   nodes = nodes or tree:get_nodes()
   for _, node in pairs(nodes) do
     if node.type == "file" then
-      if type(node) ~= "table" then
-        node = tree:get_node(node)
-      end
       local _, linenr = tree:get_node(node:get_id())
       if linenr then
         local sign

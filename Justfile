@@ -53,4 +53,4 @@ test channel="stable" file="": (prepare channel)
     --headless \
     --noplugin \
     -u tests/config.lua \
-    -c "PlenaryBustedDirectory tests/difftool/{{ file }} { minimal_init='tests/config.lua', sequential=true }"
+    -c "PlenaryBustedDirectory tests/hunk/{{ file }} { minimal_init='tests/config.lua', sequential=true }"

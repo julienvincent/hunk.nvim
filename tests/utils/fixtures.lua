@@ -1,4 +1,4 @@
-local fs = require("difftool.api.fs")
+local fs = require("hunk.api.fs")
 
 local M = {}
 

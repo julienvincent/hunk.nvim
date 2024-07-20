@@ -1,20 +1,20 @@
-local config = require("difftool.config")
+local config = require("hunk.config")
 
 local M = {
   signs = {
     selected = {
-      name = "DiffToolLineSelected",
-      hl = "DiffToolSignSelected",
+      name = "HunkLineSelected",
+      hl = "HunkSignSelected",
     },
     deselected = {
-      name = "DiffToolLineDeselected",
-      hl = "DiffToolSignDeselected",
+      name = "HunkLineDeselected",
+      hl = "HunkSignDeselected",
     },
   },
 }
 
 function M.place_sign(buf, sign, linenr)
-  vim.fn.sign_place(0, "DiffTool", sign.name, buf, {
+  vim.fn.sign_place(0, "Hunk", sign.name, buf, {
     lnum = linenr,
     priority = 100,
   })

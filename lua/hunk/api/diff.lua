@@ -1,4 +1,4 @@
-local fs = require("difftool.api.fs")
+local fs = require("hunk.api.fs")
 
 local M = {}
 
@@ -70,25 +70,5 @@ function M.apply_diff(left, right, change)
 
   return result
 end
-
--- local hunks = {
---   {
---     left = { 1, 4 },
---     right = { 1, 1 },
---   },
---   {
---     left = { 6, 0 },
---     right = { 4, 3 },
---   },
--- }
---
--- M.apply_diff({ "a", "b", "c", "f", "e", "f" }, { "a1", "e", "f", "g", "h", "i" }, hunks, {
---   left = { [1] = true, [2] = true, [3] = true, [4] = true },
---   right = { [1] = true, [4] = true, [5] = true, [6] = true },
--- })
---
--- vim.diff("a\nb\nc\nf\ne\nf\n", "a1\ne\nf\ng\nh\ni\n", {
---   result_type = "indices",
--- })
 
 return M

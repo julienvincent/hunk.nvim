@@ -1,4 +1,4 @@
-local highlights = require("difftool.api.highlights")
+local highlights = require("hunk.api.highlights")
 
 local M = {}
 
@@ -28,17 +28,17 @@ function M.create_layout()
   local right_diff = create_vertical_split()
 
   highlights.set_win_hl(left_diff, {
-    "DiffAdd:DiffToolDiffAddAsDelete",
-    "DiffDelete:DiffToolDiffDeleteDim",
+    "DiffAdd:HunkDiffAddAsDelete",
+    "DiffDelete:HunkDiffDeleteDim",
 
-    "DiffToolSignSelected:Red",
-    "DiffToolSignDeselected:Red",
+    "HunkSignSelected:Red",
+    "HunkSignDeselected:Red",
   })
 
   highlights.set_win_hl(right_diff, {
-    "DiffDelete:DiffToolDiffDeleteDim",
-    "DiffToolSignSelected:Green",
-    "DiffToolSignDeselected:Green",
+    "DiffDelete:HunkDiffDeleteDim",
+    "HunkSignSelected:Green",
+    "HunkSignDeselected:Green",
   })
 
   resize_tree(tree_window, left_diff, right_diff, 30)

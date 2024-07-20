@@ -1,6 +1,6 @@
-local diff = require("difftool.api.diff")
-local utils = require("difftool.utils")
-local fs = require("difftool.api.fs")
+local diff = require("hunk.api.diff")
+local utils = require("hunk.utils")
+local fs = require("hunk.api.fs")
 
 local M = {}
 
