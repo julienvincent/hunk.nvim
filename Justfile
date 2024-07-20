@@ -7,7 +7,6 @@ release:
 [macos]
 prepare-nvim channel:
   #!/usr/bin/env sh
-  set -eo pipefail
   NVIM_DIR=".build/nvim/{{ channel }}"
 
   test -d $NVIM_DIR || {
@@ -22,7 +21,6 @@ prepare-nvim channel:
 [linux]
 prepare-nvim channel:
   #!/usr/bin/env sh
-  set -eo pipefail
   NVIM_DIR=".build/nvim/{{ channel }}"
 
   test -d $NVIM_DIR || {
@@ -35,7 +33,6 @@ prepare-nvim channel:
 
 prepare-dependencies:
   #!/usr/bin/env sh
-  set -eo pipefail
   test -d .build/dependencies || {
     mkdir -p ./.build/dependencies
     git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ./.build/dependencies/plenary.nvim
