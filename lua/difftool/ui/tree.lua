@@ -94,15 +94,25 @@ local function file_tree_to_nodes(file_tree)
 
     if node.type == "file" then
       local path = node.change.filepath
-      local icon = require("nvim-web-devicons").get_icon(path, get_file_extension(path), {})
+      local icon, color = require("nvim-web-devicons").get_icon(path, get_file_extension(path), {})
       if icon then
-        table.insert(line, Text(icon .. " "))
+        table.insert(line, Text(icon .. " ", color))
       end
     end
 
-    local highlight = "Blue"
+    local highlight
     if node.type == "dir" then
       highlight = "Green"
+    elseif node.type == "file" then
+      if node.change.type == "added" then
+        highlight = "Green"
+      elseif node.change.type == "deleted" then
+        highlight = "Red"
+      else
+        highlight = "Blue"
+      end
+    else
+      error("Unknown node type '" .. node.type .. "'")
     end
     table.insert(line, Text(node.name, highlight))
 
@@ -167,6 +177,14 @@ function M.create(opts)
         end
       else
         line:append("  ")
+      end
+
+      if node.type == "dir" then
+        local icon = config.icons.folder_closed
+        if node:is_expanded() then
+          icon = config.icons.folder_open
+        end
+        line:append(icon .. " ", "Yellow")
       end
 
       for _, text in ipairs(node.line) do

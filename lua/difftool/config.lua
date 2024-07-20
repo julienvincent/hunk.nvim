@@ -23,19 +23,22 @@ local M = {
   ui = {
     tree = {
       -- Mode can either be `nested` or `flat`
-      mode = "nested"
-    }
+      mode = "nested",
+    },
   },
 
   icons = {
     selected = "󰡖",
     deselected = "",
+
+    folder_open = "",
+    folder_closed = "",
   },
 
   hooks = {
     on_tree_mount = function() end,
     on_diff_mount = function() end,
-  }
+  },
 }
 
 function M.update_config(new_config)
