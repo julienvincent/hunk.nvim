@@ -16,7 +16,7 @@ local function resize_tree(tree, left, right, size)
   local remaining_width = total_width - size
   local equal_width = math.floor(remaining_width / 2)
 
-  vim.api.nvim_win_set_width(tree, 30)
+  vim.api.nvim_win_set_width(tree, 40)
   vim.api.nvim_win_set_width(left, equal_width)
   vim.api.nvim_win_set_width(right, equal_width)
 end

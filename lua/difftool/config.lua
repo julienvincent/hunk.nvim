@@ -20,6 +20,13 @@ local M = {
     },
   },
 
+  ui = {
+    tree = {
+      -- Mode can either be `nested` or `flat`
+      mode = "nested"
+    }
+  },
+
   icons = {
     selected = "󰡖",
     deselected = "",

@@ -50,12 +50,42 @@ local function insert_path(tree, change)
   end
 end
 
+local function sort_tree(tree)
+  table.sort(tree, function(a, b)
+    return a.name < b.name
+  end)
+
+  for _, child in ipairs(tree) do
+    if child.children then
+      sort_tree(child.children)
+    end
+  end
+end
+
 local function build_file_tree(changeset)
   local tree = { children = {} }
   for _, change in pairs(changeset) do
     insert_path(tree, change)
   end
+
+  sort_tree(tree.children)
+
   return tree.children
+end
+
+local function build_flat_file_tree(changeset)
+  local nodes = {}
+  for _, change in pairs(changeset) do
+    table.insert(nodes, {
+      name = change.filepath,
+      type = "file",
+      change = change,
+      children = {},
+    })
+  end
+
+  sort_tree(nodes)
+  return nodes
 end
 
 local function file_tree_to_nodes(file_tree)
@@ -199,7 +229,16 @@ function M.create(opts)
     end, { buffer = buf })
   end
 
-  tree:set_nodes(file_tree_to_nodes(build_file_tree(opts.changeset)))
+  local file_tree
+  if config.ui.tree.mode == "nested" then
+    file_tree = build_file_tree(opts.changeset)
+  elseif config.ui.tree.mode == "flat" then
+    file_tree = build_flat_file_tree(opts.changeset)
+  else
+    error("Unknown value '" .. config.ui.tree("' for config entry `ui.tree.mode`"))
+  end
+
+  tree:set_nodes(file_tree_to_nodes(file_tree))
 
   return Component
 end
