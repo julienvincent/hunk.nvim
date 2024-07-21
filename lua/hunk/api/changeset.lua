@@ -71,6 +71,11 @@ local function write_change(change, output_dir)
     return
   end
 
+  if change.type == "deleted" and change.selected then
+    vim.fn.system("rm " .. output_file)
+    return
+  end
+
   if change.selected and change.type ~= "deleted" then
     vim.fn.system("cp " .. change.right_filepath .. " " .. output_file)
     return
@@ -84,7 +89,7 @@ local function write_change(change, output_dir)
     return
   end
 
-  vim.fn.system("rm " .. output_file)
+  vim.fn.system("cp " .. change.left_filepath .. " " .. output_file)
 end
 
 function M.write_changeset(changeset, output_dir)

@@ -21,6 +21,11 @@ describe("output", function()
           "d",
           "e",
         },
+        added = {
+          "a",
+          "b",
+          "c"
+        }
       }, files)
     end)
   end)
@@ -58,6 +63,11 @@ describe("output", function()
           "a1",
           "c",
         },
+        added = {
+          "a",
+          "b",
+          "c"
+        }
       }, files)
     end)
   end)
@@ -75,6 +85,11 @@ describe("output", function()
       local files = fixtures.read_dir(workspace.output)
 
       assert.are.same({
+        modified = {
+          "a",
+          "b",
+          "c"
+        },
         added = {
           "a",
           "b",
@@ -101,6 +116,11 @@ describe("output", function()
       local files = fixtures.read_dir(workspace.output)
 
       assert.are.same({
+        modified = {
+          "a",
+          "b",
+          "c"
+        },
         added = {
           "a",
         },
