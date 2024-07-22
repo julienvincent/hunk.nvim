@@ -3,6 +3,7 @@ local M = {
     global = {
       quit = { "q" },
       accept = { "<leader><Cr>" },
+      focus_tree = { "<leader>e" },
     },
 
     tree = {

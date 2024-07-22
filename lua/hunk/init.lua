@@ -68,7 +68,7 @@ local function toggle_hunk(change, side, line)
   toggle_lines(change, "right", right_lines, not any_selected)
 end
 
-local function set_global_bindings(buf)
+local function set_global_bindings(layout, buf)
   for _, chord in ipairs(utils.into_table(config.keys.global.accept)) do
     vim.keymap.set("n", chord, function()
       api.changeset.write_changeset(CONTEXT.changeset, CONTEXT.output or CONTEXT.right)
@@ -81,6 +81,14 @@ local function set_global_bindings(buf)
   for _, chord in ipairs(utils.into_table(config.keys.global.quit)) do
     vim.keymap.set("n", chord, function()
       vim.cmd("qa")
+    end, {
+      buffer = buf,
+    })
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.global.focus_tree)) do
+    vim.keymap.set("n", chord, function()
+      vim.api.nvim_set_current_win(layout.tree)
     end, {
       buffer = buf,
     })
@@ -120,8 +128,8 @@ local function open_file(layout, tree, change)
     on_event = on_file_event,
   })
 
-  set_global_bindings(left_file.buf)
-  set_global_bindings(right_file.buf)
+  set_global_bindings(layout, left_file.buf)
+  set_global_bindings(layout, right_file.buf)
 
   return left_file, right_file
 end
@@ -169,7 +177,7 @@ function M.start(left, right, output)
   left_file, right_file = open_file(layout, tree, current_change)
   vim.api.nvim_set_current_win(layout.tree)
 
-  set_global_bindings(tree.buf)
+  set_global_bindings(layout, tree.buf)
 end
 
 function M.setup(opts)
