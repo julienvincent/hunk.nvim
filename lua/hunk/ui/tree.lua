@@ -52,7 +52,11 @@ end
 
 local function sort_tree(tree)
   table.sort(tree, function(a, b)
-    return a.name < b.name
+    if a.type == b.type then
+      return a.name < b.name
+    else
+      return a.type == "dir" and b.type ~= "dir"
+    end
   end)
 
   for _, child in ipairs(tree) do
