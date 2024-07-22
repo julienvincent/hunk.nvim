@@ -71,6 +71,7 @@ hunk.setup({
     tree = {
       -- Mode can either be `nested` or `flat`
       mode = "nested",
+      width = 35,
     },
   },
 

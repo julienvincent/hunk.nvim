@@ -1,4 +1,5 @@
 local highlights = require("hunk.api.highlights")
+local config = require("hunk.config")
 
 local M = {}
 
@@ -16,7 +17,7 @@ local function resize_tree(tree, left, right, size)
   local remaining_width = total_width - size
   local equal_width = math.floor(remaining_width / 2)
 
-  vim.api.nvim_win_set_width(tree, 40)
+  vim.api.nvim_win_set_width(tree, size)
   vim.api.nvim_win_set_width(left, equal_width)
   vim.api.nvim_win_set_width(right, equal_width)
 end
@@ -41,7 +42,7 @@ function M.create_layout()
     "HunkSignDeselected:Green",
   })
 
-  resize_tree(tree_window, left_diff, right_diff, 30)
+  resize_tree(tree_window, left_diff, right_diff, config.ui.tree.width)
 
   vim.api.nvim_set_current_win(tree_window)
 
