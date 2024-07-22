@@ -8,8 +8,6 @@
   </p>
 </div>
 
----
-
 This is a Neovim tool for splitting/editing diffs. It operates over a `left` and `right` directory, producing a diff of
 the two which can subsequently be inspected and modified. The `DiffEditor` allows selecting changes by file, hunk or
 individual line to produce a new partial diff.
@@ -23,6 +21,8 @@ presented with the left and right side of each file and can select the lines fro
 
 When you are happy with your selection you can accept changes and the diff editor will modify the `output` directory (or
 the `right` directory if no output is provided) to match your selection.
+
+![preview](assets/preview.png)
 
 ## Installation
 
