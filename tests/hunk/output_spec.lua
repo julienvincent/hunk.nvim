@@ -21,11 +21,6 @@ describe("output", function()
           "d",
           "e",
         },
-        added = {
-          "a",
-          "b",
-          "c"
-        }
       }, files)
     end)
   end)
@@ -63,11 +58,6 @@ describe("output", function()
           "a1",
           "c",
         },
-        added = {
-          "a",
-          "b",
-          "c"
-        }
       }, files)
     end)
   end)

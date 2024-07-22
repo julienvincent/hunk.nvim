@@ -76,6 +76,11 @@ local function write_change(change, output_dir)
     return
   end
 
+  if change.type == "added" and not change.selected and not any_selected then
+    vim.fn.system("rm " .. output_file)
+    return
+  end
+
   if change.selected and change.type ~= "deleted" then
     vim.fn.system("cp " .. change.right_filepath .. " " .. output_file)
     return
