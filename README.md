@@ -35,11 +35,17 @@ the `right` directory if no output is provided) to match your selection.
   config = function()
     require("hunk").setup()
   end,
-  dependencies = {
-    { "MunifTanjim/nui.nvim" }
-  }
 }
 ```
+
+### Dependencies
+
++ [nui.nvim](https://github.com/MunifTanjim/nui.nvim)
++ [nvim-web-devicons](https://github.com/nvim-tree/nvim-web-devicons) (optional)
++ [mini.icons](https://github.com/echasnovski/mini.icons) (optional)
+
+If you want file type icons in the file tree then you should have one of either `mini.icons` or `nvim-web-devicons`
+installed. Otherwise, neither are required.
 
 ## Configuration
 
