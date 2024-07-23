@@ -92,13 +92,25 @@ local function build_flat_file_tree(changeset)
   return nodes
 end
 
+local function get_icon(path)
+  local has_mini_icons, mini_icons = pcall(require, "mini.icons")
+
+  if has_mini_icons then
+    return mini_icons.get("file", path)
+  end
+
+  local has_web_devicons, web_devicons = pcall(require, "nvim-web-devicons")
+  if has_web_devicons then
+    return web_devicons.get_icon(path, get_file_extension(path), {})
+  end
+end
+
 local function file_tree_to_nodes(file_tree)
   return vim.tbl_map(function(node)
     local line = {}
 
     if node.type == "file" then
-      local path = node.change.filepath
-      local icon, color = require("nvim-web-devicons").get_icon(path, get_file_extension(path), {})
+      local icon, color = get_icon(node.change.filepath)
       if icon then
         table.insert(line, Text(icon .. " ", color))
       end
