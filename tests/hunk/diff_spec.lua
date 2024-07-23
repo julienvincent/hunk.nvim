@@ -79,4 +79,54 @@ describe("diff patching", function()
       })
     end)
   end)
+
+  it("should handle inserts at beginning of file correctly", function()
+    fixtures.with_workspace(function(workspace)
+      fixtures.prepare_workspace(workspace, {
+        modified = {
+          "a",
+          "b",
+          "c",
+          "d",
+        },
+      }, {
+        modified = {
+          "new",
+          "a",
+          "b",
+          "changed",
+          "d",
+        },
+      })
+
+      local changeset = api.changeset.load_changeset(workspace.left, workspace.right)
+
+      local change = changeset.modified
+      local left_file_content = api.fs.read_file_as_lines(change.left_filepath)
+      local right_file_content = api.fs.read_file_as_lines(change.right_filepath)
+      change.selected_lines = {
+        left = {
+          [1] = true,
+          [2] = true,
+          [3] = true,
+          [4] = true,
+        },
+        right = {
+          [1] = true,
+          [2] = true,
+          [3] = true,
+          [4] = true,
+          [5] = true,
+        },
+      }
+      local result = api.diff.apply_diff(left_file_content, right_file_content, change)
+      assert.are.same({
+        "new",
+        "a",
+        "b",
+        "changed",
+        "d",
+      }, result)
+    end)
+  end)
 end)

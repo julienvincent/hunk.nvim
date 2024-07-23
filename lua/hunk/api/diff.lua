@@ -32,13 +32,19 @@ function M.apply_diff(left, right, change)
   local hunk_index = 1
   local hunk = hunks[hunk_index]
 
-  if change.type == "added" then
+  if change.type == "added" or hunk.left[1] == 0 then
     for i in utils.hunk_lines(hunk.right) do
       if selected_lines.right[i] then
         table.insert(result, right[i])
       end
     end
-    return result
+
+    if change.type == "added" then
+      return result
+    end
+
+    hunk_index = hunk_index + 1
+    hunk = hunks[hunk_index]
   end
 
   while left_index <= #left do
