@@ -32,6 +32,7 @@ local M = {
   icons = {
     selected = "󰡖",
     deselected = "",
+    partially_selected = "󰛲",
 
     folder_open = "",
     folder_closed = "",

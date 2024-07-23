@@ -141,6 +141,8 @@ local function apply_signs(tree, buf, nodes)
         local sign
         if node.change.selected then
           sign = signs.signs.selected
+        elseif utils.any_lines_selected(node.change) then
+          sign = signs.signs.partially_selected
         else
           sign = signs.signs.deselected
         end
