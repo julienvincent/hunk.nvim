@@ -9,11 +9,11 @@ local CONTEXT
 
 local function toggle_file(change)
   for _, hunk in ipairs(change.hunks) do
-    for i = hunk.left[1], hunk.left[1] + hunk.left[2] - 1 do
+    for i in utils.hunk_lines(hunk.left) do
       change.selected_lines.left[i] = not change.selected
     end
 
-    for i = hunk.right[1], hunk.right[1] + hunk.right[2] - 1 do
+    for i in utils.hunk_lines(hunk.right) do
       change.selected_lines.right[i] = not change.selected
     end
   end
@@ -53,12 +53,12 @@ local function toggle_hunk(change, side, line)
   end
 
   local left_lines = {}
-  for i = hunk.left[1], hunk.left[1] + hunk.left[2] - 1 do
+  for i in utils.hunk_lines(hunk.left) do
     table.insert(left_lines, i)
   end
 
   local right_lines = {}
-  for i = hunk.right[1], hunk.right[1] + hunk.right[2] - 1 do
+  for i in utils.hunk_lines(hunk.right) do
     table.insert(right_lines, i)
   end
 

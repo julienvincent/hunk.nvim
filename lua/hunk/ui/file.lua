@@ -67,8 +67,7 @@ function M.create(window, params)
 
   local function apply_signs()
     for _, hunk in ipairs(params.change.hunks) do
-      local local_hunk = hunk[params.side]
-      for i = local_hunk[1], local_hunk[1] + local_hunk[2] - 1 do
+      for i in utils.hunk_lines(hunk[params.side]) do
         local is_selected = params.change.selected_lines[params.side][i]
         local sign
         if is_selected then

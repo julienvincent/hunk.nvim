@@ -28,14 +28,24 @@ function M.into_table(value)
   return { value }
 end
 
+function M.hunk_lines(hunk)
+  local line = hunk[1] - 1
+  return function()
+    line = line + 1
+    if line < hunk[1] + hunk[2] then
+      return line
+    end
+  end
+end
+
 function M.all_lines_selected_in_hunk(change, hunk)
-  for i = hunk.left[1], hunk.left[1] + hunk.left[2] - 1 do
+  for i in M.hunk_lines(hunk.left) do
     if not change.selected_lines.left[i] then
       return false
     end
   end
 
-  for i = hunk.right[1], hunk.right[1] + hunk.right[2] - 1 do
+  for i in M.hunk_lines(hunk.right) do
     if not change.selected_lines.right[i] then
       return false
     end
@@ -55,13 +65,13 @@ function M.all_lines_selected(change)
 end
 
 function M.any_lines_selected_in_hunk(change, hunk)
-  for i = hunk.left[1], hunk.left[1] + hunk.left[2] - 1 do
+  for i in M.hunk_lines(hunk.left) do
     if change.selected_lines.left[i] then
       return true
     end
   end
 
-  for i = hunk.right[1], hunk.right[1] + hunk.right[2] - 1 do
+  for i in M.hunk_lines(hunk.right) do
     if change.selected_lines.right[i] then
       return true
     end

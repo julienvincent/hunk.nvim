@@ -1,3 +1,4 @@
+local utils = require("hunk.utils")
 local fs = require("hunk.api.fs")
 
 local M = {}
@@ -32,7 +33,7 @@ function M.apply_diff(left, right, change)
   local hunk = hunks[hunk_index]
 
   if change.type == "added" then
-    for i = hunk.right[1], hunk.right[1] + hunk.right[2] - 1 do
+    for i in utils.hunk_lines(hunk.right) do
       if selected_lines.right[i] then
         table.insert(result, right[i])
       end
@@ -42,7 +43,7 @@ function M.apply_diff(left, right, change)
 
   while left_index <= #left do
     if hunk and left_index == hunk.left[1] then
-      for i = left_index, left_index + hunk.left[2] - 1 do
+      for i in utils.hunk_lines(hunk.left) do
         left_index = i
         if not selected_lines.left[i] then
           table.insert(result, left[i])
@@ -53,7 +54,7 @@ function M.apply_diff(left, right, change)
         table.insert(result, left[left_index])
       end
 
-      for i = hunk.right[1], hunk.right[1] + hunk.right[2] - 1 do
+      for i in utils.hunk_lines(hunk.right) do
         if selected_lines.right[i] then
           table.insert(result, right[i])
         end
