@@ -27,6 +27,8 @@ local M = {
       mode = "nested",
       width = 35,
     },
+    --- Can be either `vertical` or `horizontal`
+    layout = "vertical",
   },
 
   icons = {
