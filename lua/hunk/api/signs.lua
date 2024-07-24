@@ -17,6 +17,12 @@ local M = {
   },
 }
 
+function M.clear_signs(buf)
+  vim.fn.sign_unplace("Hunk", {
+    buffer = buf,
+  })
+end
+
 function M.place_sign(buf, sign, linenr)
   vim.fn.sign_place(0, "Hunk", sign.name, buf, {
     lnum = linenr,

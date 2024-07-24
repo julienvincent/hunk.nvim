@@ -218,6 +218,7 @@ function M.create(opts)
 
   function Component.render()
     tree:render()
+    signs.clear_signs(buf)
     apply_signs(tree, buf)
   end
 

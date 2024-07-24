@@ -66,6 +66,8 @@ function M.create(window, params)
   end
 
   local function apply_signs()
+    api.signs.clear_signs(buf)
+
     for _, hunk in ipairs(params.change.hunks) do
       for i in utils.hunk_lines(hunk[params.side]) do
         local is_selected = params.change.selected_lines[params.side][i]
