@@ -1,23 +1,35 @@
 local M = {
   keys = {
     global = {
-      quit = { "q" },
-      accept = { "<leader><Cr>" },
-      focus_tree = { "<leader>e" },
+      n = {
+        ["q"] = "<Plug>(hunk.global.quit)",
+        ["<leader><cr>"] = { "<Plug>(hunk.global.accept)", { desc = "Accept" } },
+        ["<leader>e"] = { "<Plug>(hunk.global.focus_tree)", { desc = "Focus Tree" } },
+      },
     },
 
     tree = {
-      expand_node = { "l", "<Right>" },
-      collapse_node = { "h", "<Left>" },
+      n = {
+        ["l"] = "<Plug>(hunk.tree.expand_node)",
+        ["<right>"] = "<Plug>(hunk.tree.expand_node)",
 
-      open_file = { "<Cr>" },
+        ["h"] = "<Plug>(hunk.tree.collapse_node)",
+        ["<left>"] = "<Plug>(hunk.tree.collapse_node)",
 
-      toggle_file = { "a" },
+        ["<cr>"] = "<Plug>(hunk.tree.open_file)",
+
+        ["a"] = "<Plug>(hunk.tree.toggle_file)",
+      },
     },
 
     diff = {
-      toggle_line = { "a" },
-      toggle_hunk = { "A" },
+      n = {
+        ["a"] = "<Plug>(hunk.diff.toggle_line)",
+        ["A"] = "<Plug>(hunk.diff.toggle_hunk)",
+      },
+      v = {
+        ["a"] = { "<Plug>(hunk.diff.toggle_visual_lines)", { desc = "Toggle Visual Lines", nowait = true } },
+      },
     },
   },
 

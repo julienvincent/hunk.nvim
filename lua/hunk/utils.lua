@@ -90,4 +90,33 @@ function M.any_lines_selected(change)
   return false
 end
 
+---Set keys from a table of [lhs] = rhs
+---@param table table<string, table<string, string|function>>
+---@param context table? an optional context table
+---@param buf number? optional buffer
+function M.set_keys(table, context, buf)
+  for mode, binds in pairs(table) do
+    for lhs, rhs in pairs(binds) do
+      if not rhs then
+        goto continue
+      end
+
+      local opts = { buffer = buf }
+      if type(rhs) == "table" then
+        opts = vim.tbl_extend("keep", opts, rhs[2])
+        rhs = rhs[1]
+      end
+
+      if type(rhs) == "function" then
+        vim.keymap.set(mode, lhs, function()
+          rhs(context)
+        end, opts)
+      else
+        vim.keymap.set(mode, lhs, rhs, opts)
+      end
+      ::continue::
+    end
+  end
+end
+
 return M

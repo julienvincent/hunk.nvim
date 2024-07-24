@@ -19,51 +19,45 @@ function M.create(window, params)
     change = params.change,
   }
 
-  vim.api.nvim_set_option_value("modifiable", false, {
-    buf = buf,
-  })
-  vim.api.nvim_set_option_value("readonly", true, {
-    buf = buf,
-  })
+  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+  vim.api.nvim_set_option_value("readonly", true, { buf = buf })
 
-  for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_line)) do
-    vim.keymap.set("n", chord, function()
-      local line = vim.api.nvim_win_get_cursor(window)[1]
-      params.on_event({
-        type = "toggle-lines",
-        lines = { line },
-        file = File,
-      })
-    end, { buffer = buf })
-  end
+  vim.keymap.set("n", "<Plug>(hunk.diff.toggle_line)", function()
+    local line = vim.api.nvim_win_get_cursor(window)[1]
+    params.on_event({
+      type = "toggle-lines",
+      lines = { line },
+      file = File,
+    })
+  end, { buffer = buf })
 
-  for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_hunk)) do
-    vim.keymap.set("n", chord, function()
-      params.on_event({
-        type = "toggle-hunk",
-        line = vim.api.nvim_win_get_cursor(window)[1],
-        file = File,
-      })
-    end, { buffer = buf })
+  vim.keymap.set("n", "<Plug>(hunk.diff.toggle_hunk)", function()
+    params.on_event({
+      type = "toggle-hunk",
+      line = vim.api.nvim_win_get_cursor(window)[1],
+      file = File,
+    })
+  end, { buffer = buf })
 
-    vim.keymap.set("v", chord, function()
-      vim.cmd("normal! <Esc>")
+  vim.keymap.set("v", "<Plug>(hunk.diff.toggle_visual_lines)", function()
+    local start_line = vim.fn.getpos("v")[2]
+    local end_line = vim.fn.getpos(".")[2]
 
-      local start_line = vim.fn.getpos("'<")[2]
-      local end_line = vim.fn.getpos("'>")[2]
+    local lines = {}
+    for i = math.min(start_line, end_line), math.max(start_line, end_line) do
+      table.insert(lines, i)
+    end
 
-      local lines = {}
-      for i = start_line, start_line + end_line do
-        table.insert(lines, i)
-      end
-
+    vim.schedule(function()
       params.on_event({
         type = "toggle-lines",
         lines = lines,
         file = File,
       })
-    end, { buffer = buf })
-  end
+    end)
+  end, { buffer = buf, nowait = true })
+
+  utils.set_keys(config.keys.diff, { window = window, params = params }, buf)
 
   local function apply_signs()
     api.signs.clear_signs(buf)

@@ -222,17 +222,14 @@ function M.create(opts)
     apply_signs(tree, buf)
   end
 
-  for _, chord in ipairs(utils.into_table(config.keys.tree.open_file)) do
-    vim.keymap.set("n", chord, function()
-      local node = tree:get_node()
-      if node.type == "file" then
-        opts.on_open(node.change)
-      end
-    end, { buffer = buf })
-  end
+  vim.keymap.set("n", "<Plug>(hunk.tree.open_file)", function()
+    local node = tree:get_node()
+    if node.type == "file" then
+      opts.on_open(node.change)
+    end
+  end, { buffer = buf, desc = "Open File" })
 
-  for _, chord in ipairs(utils.into_table(config.keys.tree.expand_node)) do
-    vim.keymap.set("n", chord, function()
+  vim.keymap.set("n", "<Plug>(hunk.tree.expand_node)", function()
       local node = tree:get_node()
       if node.type == "file" then
         opts.on_preview(node.change)
@@ -241,27 +238,29 @@ function M.create(opts)
         node:expand()
         Component.render()
       end
-    end, { buffer = buf })
-  end
+    end, { buffer = buf, desc = "Expand Folder" })
 
-  for _, chord in ipairs(utils.into_table(config.keys.tree.collapse_node)) do
-    vim.keymap.set("n", chord, function()
+  vim.keymap.set("n", "<Plug>(hunk.tree.collapse_node)", function()
       local node = tree:get_node()
       if node.type == "dir" and node:is_expanded() then
         node:collapse()
         Component.render()
       end
-    end, { buffer = buf })
-  end
+    end, { buffer = buf, desc = "Collapse Folder" })
 
-  for _, chord in ipairs(utils.into_table(config.keys.tree.toggle_file)) do
-    vim.keymap.set("n", chord, function()
+  vim.keymap.set("n", "<Plug>(hunk.tree.toggle_file)", function()
       local node = tree:get_node()
       if node.type == "file" then
         opts.on_toggle(node.change)
       end
-    end, { buffer = buf })
-  end
+    end, { buffer = buf, desc = "Toggle File" })
+
+  local context = {
+    opts = opts,
+    tree = tree,
+  }
+
+  utils.set_keys(config.keys.tree, context, buf)
 
   local file_tree
   if config.ui.tree.mode == "nested" then

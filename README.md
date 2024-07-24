@@ -54,23 +54,35 @@ local hunk = require("hunk")
 hunk.setup({
   keys = {
     global = {
-      quit = { "q" },
-      accept = { "<leader><Cr>" },
-      focus_tree = { "<leader>e" },
+      n = {
+        ["q"] = "<Plug>(hunk.global.quit)",
+        ["<leader><cr>"] = { "<Plug>(hunk.global.accept)", { desc = "Accept" } },
+        ["<leader>e"] = { "<Plug>(hunk.global.focus_tree)", { desc = "Focus Tree" } },
+      },
     },
 
     tree = {
-      expand_node = { "l", "<Right>" },
-      collapse_node = { "h", "<Left>" },
+      n = {
+        ["l"] = "<Plug>(hunk.tree.expand_node)",
+        ["<right>"] = "<Plug>(hunk.tree.expand_node)",
 
-      open_file = { "<Cr>" },
+        ["h"] = "<Plug>(hunk.tree.collapse_node)",
+        ["<left>"] = "<Plug>(hunk.tree.collapse_node)",
 
-      toggle_file = { "a" },
+        ["<cr>"] = "<Plug>(hunk.tree.open_file)",
+
+        ["a"] = "<Plug>(hunk.tree.toggle_file)",
+      },
     },
 
     diff = {
-      toggle_line = { "a" },
-      toggle_hunk = { "A" },
+      n = {
+        ["a"] = "<Plug>(hunk.diff.toggle_line)",
+        ["A"] = "<Plug>(hunk.diff.toggle_hunk)",
+      },
+      v = {
+        ["a"] = { "<Plug>(hunk.diff.toggle_visual_lines)", { desc = "Toggle Visual Lines", nowait = true } },
+      },
     },
   },
 
@@ -94,6 +106,102 @@ hunk.setup({
   },
 })
 ```
+
+### Keys
+
+The `keys` key above allow you to customize/add/remove keybinds in the different `hunk.nvim`
+windows. Hunk exposes the following plug mappings to be used **only in configuration**. Each
+mapping is buffer local.
+
+- `<Plug>(hunk.diff.toggle_visual_lines)` - visual mode only
+- `<Plug>(hunk.diff.toggle_hunk)`
+- `<Plug>(hunk.diff.toggle_line)`
+- `<Plug>(hunk.tree.toggle_file)`
+- `<Plug>(hunk.tree.open_file)`
+- `<Plug>(hunk.tree.collapse_node)`
+- `<Plug>(hunk.tree.collapse_node)`
+- `<Plug>(hunk.tree.expand_node)`
+- `<Plug>(hunk.tree.expand_node)`
+- `<Plug>(hunk.global.focus_tree)`
+- `<Plug>(hunk.global.accept)`
+- `<Plug>(hunk.global.quit)`
+
+The key for a mapping is generally: `window.mode.lhs = <mapping>` where mapping is either:
+- a string: `rhs` or
+- a table: `{rhs, { opts }}`
+
+You can also pass a function in place of `rhs`. This function will receive a `context` argument that
+contains some helpful information. Different information is provided for different windows. This
+allows for custom behavior, for example:
+
+<details>
+  <summary>Skipping Folders in the File Tree</summary>
+
+These bindings allow `j`/`k` to skip over folders in the file tree (b/c they're generally not
+relevant). You can still access folders with `gj`/`gk`.
+
+```lua
+-- track all the lines of leaf nodes so we don't have to recompute them on each key press
+local jumpable_lines
+local function set_jumpabe_lines(context)
+  jumpable_lines = {}
+  local i = 1
+  local n, _, _ = context.tree:get_node(i)
+  while n do
+    if not n:has_children() then
+      table.insert(jumpable_lines, i)
+    end
+    i = i + 1
+    n, _, _ = context.tree:get_node(i)
+  end
+end
+
+require("hunk").setup({
+  keys = {
+    tree = {
+      n = {
+        ["j"] = function(context)
+          -- unfortunately we have to recompute every time because folding ruins these computed values
+          set_jumpabe_lines(context)
+
+          local row = vim.api.nvim_win_get_cursor(0)[1]
+          if row < jumpable_lines[1] then
+            vim.api.nvim_win_set_cursor(0, { jumpable_lines[1], 0 })
+            return
+          end
+          for idx = #jumpable_lines, 1, -1 do
+            if jumpable_lines[idx] <= row then
+              if jumpable_lines[idx + 1] then
+                vim.api.nvim_win_set_cursor(0, { jumpable_lines[idx + 1], 0 })
+              end
+              return
+            end
+          end
+        end,
+        ["k"] = function(context)
+          set_jumpabe_lines(context)
+
+          local row = vim.api.nvim_win_get_cursor(0)[1]
+          if row > jumpable_lines[#jumpable_lines] then
+            vim.api.nvim_win_set_cursor(0, { jumpable_lines[#jumpable_lines], 0 })
+            return
+          end
+
+          for idx, node_row in ipairs(jumpable_lines) do
+            if node_row >= row then
+              if jumpable_lines[idx - 1] then
+                vim.api.nvim_win_set_cursor(0, { jumpable_lines[idx - 1], 0 })
+              end
+              return
+            end
+          end
+        end,
+      },
+    },
+  },
+})
+```
+</details>
 
 ## Using with Jujutsu
 

@@ -69,30 +69,20 @@ local function toggle_hunk(change, side, line)
 end
 
 local function set_global_bindings(layout, buf)
-  for _, chord in ipairs(utils.into_table(config.keys.global.accept)) do
-    vim.keymap.set("n", chord, function()
-      api.changeset.write_changeset(CONTEXT.changeset, CONTEXT.output or CONTEXT.right)
-      vim.cmd("qa")
-    end, {
-      buffer = buf,
-    })
-  end
+  vim.keymap.set("n", "<Plug>(hunk.global.accept)", function()
+    api.changeset.write_changeset(CONTEXT.changeset, CONTEXT.output or CONTEXT.right)
+    vim.cmd("qa")
+  end, { buffer = buf })
 
-  for _, chord in ipairs(utils.into_table(config.keys.global.quit)) do
-    vim.keymap.set("n", chord, function()
-      vim.cmd("qa")
-    end, {
-      buffer = buf,
-    })
-  end
+  vim.keymap.set("n", "<Plug>(hunk.global.quit)", function()
+    vim.cmd("qa")
+  end, { buffer = buf })
 
-  for _, chord in ipairs(utils.into_table(config.keys.global.focus_tree)) do
-    vim.keymap.set("n", chord, function()
-      vim.api.nvim_set_current_win(layout.tree)
-    end, {
-      buffer = buf,
-    })
-  end
+  vim.keymap.set("n", "<Plug>(hunk.global.focus_tree)", function()
+    vim.api.nvim_set_current_win(layout.tree)
+  end, { buffer = buf })
+
+  utils.set_keys(config.keys.global, { tree = layout.tree }, buf)
 end
 
 local function open_file(layout, tree, change)
