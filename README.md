@@ -80,11 +80,14 @@ hunk.setup({
       mode = "nested",
       width = 35,
     },
+    --- Can be either `vertical` or `horizontal`
+    layout = "vertical",
   },
 
   icons = {
     selected = "󰡖",
     deselected = "",
+    partially_selected = "󰛲",
 
     folder_open = "",
     folder_closed = "",
