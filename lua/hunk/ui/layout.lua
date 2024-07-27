@@ -59,6 +59,7 @@ function M.create_layout()
   })
 
   resize_tree(tree_window, left_diff, right_diff, config.ui.tree.width, config.ui.layout)
+  vim.api.nvim_set_option_value("winfixwidth", true, { win = tree_window })
 
   vim.api.nvim_set_current_win(tree_window)
 
