@@ -47,21 +47,24 @@ function M.create(window, params)
     end, { buffer = buf })
 
     vim.keymap.set("v", chord, function()
-      vim.cmd("normal! <Esc>")
+      local start_line = vim.fn.getpos(".")[2]
+      local end_line = vim.fn.getpos("v")[2]
 
-      local start_line = vim.fn.getpos("'<")[2]
-      local end_line = vim.fn.getpos("'>")[2]
+      -- escape out of visual mode
+      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc>", true, false, true), "m", false)
 
       local lines = {}
-      for i = start_line, start_line + end_line do
+      for i = math.min(start_line, end_line), math.max(start_line, end_line) do
         table.insert(lines, i)
       end
 
-      params.on_event({
-        type = "toggle-lines",
-        lines = lines,
-        file = File,
-      })
+      vim.schedule(function()
+        params.on_event({
+          type = "toggle-lines",
+          lines = lines,
+          file = File,
+        })
+      end)
     end, { buffer = buf })
   end
 
