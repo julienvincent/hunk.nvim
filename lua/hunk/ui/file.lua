@@ -35,6 +35,27 @@ function M.create(window, params)
         file = File,
       })
     end, { buffer = buf })
+
+    vim.keymap.set("v", chord, function()
+      local start_line = vim.fn.getpos(".")[2]
+      local end_line = vim.fn.getpos("v")[2]
+
+      -- escape out of visual mode
+      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc>", true, false, true), "m", false)
+
+      local lines = {}
+      for i = math.min(start_line, end_line), math.max(start_line, end_line) do
+        table.insert(lines, i)
+      end
+
+      vim.schedule(function()
+        params.on_event({
+          type = "toggle-lines",
+          lines = lines,
+          file = File,
+        })
+      end)
+    end, { buffer = buf })
   end
 
   for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_hunk)) do
@@ -42,24 +63,6 @@ function M.create(window, params)
       params.on_event({
         type = "toggle-hunk",
         line = vim.api.nvim_win_get_cursor(window)[1],
-        file = File,
-      })
-    end, { buffer = buf })
-
-    vim.keymap.set("v", chord, function()
-      vim.cmd("normal! <Esc>")
-
-      local start_line = vim.fn.getpos("'<")[2]
-      local end_line = vim.fn.getpos("'>")[2]
-
-      local lines = {}
-      for i = start_line, start_line + end_line do
-        table.insert(lines, i)
-      end
-
-      params.on_event({
-        type = "toggle-lines",
-        lines = lines,
         file = File,
       })
     end, { buffer = buf })
