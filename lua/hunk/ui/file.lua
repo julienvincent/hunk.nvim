@@ -35,16 +35,6 @@ function M.create(window, params)
         file = File,
       })
     end, { buffer = buf })
-  end
-
-  for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_hunk)) do
-    vim.keymap.set("n", chord, function()
-      params.on_event({
-        type = "toggle-hunk",
-        line = vim.api.nvim_win_get_cursor(window)[1],
-        file = File,
-      })
-    end, { buffer = buf })
 
     vim.keymap.set("v", chord, function()
       local start_line = vim.fn.getpos(".")[2]
@@ -65,6 +55,16 @@ function M.create(window, params)
           file = File,
         })
       end)
+    end, { buffer = buf })
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_hunk)) do
+    vim.keymap.set("n", chord, function()
+      params.on_event({
+        type = "toggle-hunk",
+        line = vim.api.nvim_win_get_cursor(window)[1],
+        file = File,
+      })
     end, { buffer = buf })
   end
 
