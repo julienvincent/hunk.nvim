@@ -263,6 +263,8 @@ function M.create(opts)
     end, { buffer = buf })
   end
 
+  config.hooks.on_tree_mount({ buf = buf, tree = tree, opts = opts })
+
   local file_tree
   if config.ui.tree.mode == "nested" then
     file_tree = build_file_tree(opts.changeset)
