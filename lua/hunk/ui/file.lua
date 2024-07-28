@@ -65,6 +65,8 @@ function M.create(window, params)
     end, { buffer = buf })
   end
 
+  config.hooks.on_diff_mount({ buf = buf, win = window })
+
   local function apply_signs()
     api.signs.clear_signs(buf)
 
