@@ -1,3 +1,4 @@
+local file_tree_api = require("hunk.api.file_tree")
 local signs = require("hunk.api.signs")
 local config = require("hunk.config")
 local utils = require("hunk.utils")
@@ -12,84 +13,6 @@ local function get_file_extension(path)
     return ""
   end
   return string.sub(extension, 2) or ""
-end
-
-local function split_path(path)
-  local parts = {}
-  for part in string.gmatch(path, "([^/]+)") do
-    table.insert(parts, part)
-  end
-  return parts
-end
-
-local function insert_path(tree, change)
-  local parts = split_path(change.filepath)
-  local node = tree
-  for i, part in ipairs(parts) do
-    local is_last = i == #parts
-    local found = false
-
-    for _, child in ipairs(node.children) do
-      if child.name == part and child.type == "dir" then
-        node = child
-        found = true
-        break
-      end
-    end
-
-    if not found then
-      local new_node = {
-        name = part,
-        type = is_last and "file" or "dir",
-        change = change,
-        children = {},
-      }
-      table.insert(node.children, new_node)
-      node = new_node
-    end
-  end
-end
-
-local function sort_tree(tree)
-  table.sort(tree, function(a, b)
-    if a.type == b.type then
-      return a.name < b.name
-    else
-      return a.type == "dir" and b.type ~= "dir"
-    end
-  end)
-
-  for _, child in ipairs(tree) do
-    if child.children then
-      sort_tree(child.children)
-    end
-  end
-end
-
-local function build_file_tree(changeset)
-  local tree = { children = {} }
-  for _, change in pairs(changeset) do
-    insert_path(tree, change)
-  end
-
-  sort_tree(tree.children)
-
-  return tree.children
-end
-
-local function build_flat_file_tree(changeset)
-  local nodes = {}
-  for _, change in pairs(changeset) do
-    table.insert(nodes, {
-      name = change.filepath,
-      type = "file",
-      change = change,
-      children = {},
-    })
-  end
-
-  sort_tree(nodes)
-  return nodes
 end
 
 local function get_icon(path)
@@ -267,9 +190,9 @@ function M.create(opts)
 
   local file_tree
   if config.ui.tree.mode == "nested" then
-    file_tree = build_file_tree(opts.changeset)
+    file_tree = file_tree_api.build_file_tree(opts.changeset)
   elseif config.ui.tree.mode == "flat" then
-    file_tree = build_flat_file_tree(opts.changeset)
+    file_tree = file_tree_api.build_flat_file_tree(opts.changeset)
   else
     error("Unknown value '" .. config.ui.tree("' for config entry `ui.tree.mode`"))
   end
