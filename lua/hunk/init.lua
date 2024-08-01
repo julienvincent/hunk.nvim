@@ -136,8 +136,6 @@ end
 
 function M.start(left, right, output)
   local changeset = api.changeset.load_changeset(left, right)
-  local files = utils.get_keys(changeset)
-
   local layout = ui.layout.create_layout()
 
   CONTEXT = {
@@ -147,19 +145,16 @@ function M.start(left, right, output)
     output = output,
   }
 
-  local current_change = changeset[files[1]]
   local left_file, right_file, tree
 
   tree = ui.tree.create({
     winid = layout.tree,
     changeset = changeset,
     on_open = function(change)
-      current_change = change
       left_file, right_file = open_file(layout, tree, change)
       vim.api.nvim_set_current_win(layout.right)
     end,
     on_preview = function(change)
-      current_change = change
       left_file, right_file = open_file(layout, tree, change)
       vim.api.nvim_set_current_win(layout.tree)
     end,
@@ -173,9 +168,6 @@ function M.start(left, right, output)
   })
 
   tree.render()
-
-  left_file, right_file = open_file(layout, tree, current_change)
-  vim.api.nvim_set_current_win(layout.tree)
 
   set_global_bindings(layout, tree.buf)
 end

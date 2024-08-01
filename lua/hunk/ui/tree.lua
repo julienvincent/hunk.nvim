@@ -95,6 +95,27 @@ local function apply_signs(tree, buf, nodes)
   end
 end
 
+local function find_node_by_filepath(tree, path, nodes)
+  nodes = nodes or tree:get_nodes()
+  for _, node in pairs(nodes) do
+    local children = vim.tbl_map(function(id)
+      return tree:get_node(id)
+    end, node:get_child_ids())
+
+    local match, match_linenr = find_node_by_filepath(tree, path, children)
+    if match then
+      return match, match_linenr
+    end
+
+    if node.type == "file" then
+      local _, linenr = tree:get_node(node:get_id())
+      if linenr and node.change.filepath == path then
+        return node, linenr
+      end
+    end
+  end
+end
+
 local M = {}
 
 function M.create(opts)
@@ -198,6 +219,17 @@ function M.create(opts)
   end
 
   tree:set_nodes(file_tree_to_nodes(file_tree))
+  Component.render()
+
+  local selected_file = file_tree_api.find_first_file_in_tree(file_tree)
+  if selected_file then
+    local _, selected_linenr = find_node_by_filepath(tree, selected_file.change.filepath)
+    if selected_linenr then
+      vim.api.nvim_win_set_cursor(opts.winid, { selected_linenr, 0 })
+    end
+
+    opts.on_preview(selected_file.change)
+  end
 
   return Component
 end
