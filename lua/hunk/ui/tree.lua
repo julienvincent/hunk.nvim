@@ -116,6 +116,24 @@ local function find_node_by_filepath(tree, path, nodes)
   end
 end
 
+local function get_changeset_recursive(tree, node, changeset)
+  changeset = changeset or {}
+
+  local children = vim.tbl_map(function(id)
+    return tree:get_node(id)
+  end, node:get_child_ids())
+
+  for _, child in ipairs(children) do
+    if child.type == "file" then
+      table.insert(changeset, child.change)
+    else
+      get_changeset_recursive(tree, child, changeset)
+    end
+  end
+
+  return changeset
+end
+
 local M = {}
 
 function M.create(opts)
@@ -203,6 +221,12 @@ function M.create(opts)
       local node = tree:get_node()
       if node.type == "file" then
         opts.on_toggle(node.change)
+        return
+      end
+
+      local changeset = get_changeset_recursive(tree, node)
+      for _, change in ipairs(changeset) do
+        opts.on_toggle(change)
       end
     end, { buffer = buf })
   end
