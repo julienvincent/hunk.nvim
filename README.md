@@ -22,7 +22,7 @@ presented with the left and right side of each file and can select the lines fro
 When you are happy with your selection you can accept changes and the diff editor will modify the `output` directory (or
 the `right` directory if no output is provided) to match your selection.
 
-![preview](assets/preview.png)
+![preview](https://github.com/user-attachments/assets/eb323913-41a7-4043-8bff-cf08eeba20c5)
 
 ## Installation
 
