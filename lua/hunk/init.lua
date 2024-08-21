@@ -80,7 +80,7 @@ local function set_global_bindings(layout, buf)
 
   for _, chord in ipairs(utils.into_table(config.keys.global.quit)) do
     vim.keymap.set("n", chord, function()
-      vim.cmd("qa")
+      vim.cmd("cq")
     end, {
       buffer = buf,
     })
