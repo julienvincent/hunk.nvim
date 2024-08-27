@@ -4,13 +4,75 @@ local api = require("hunk.api")
 
 local M = {}
 
+local function get_buf_by_name(name)
+  local bufs = vim.api.nvim_list_bufs()
+
+  for _, buf in ipairs(bufs) do
+    if vim.api.nvim_buf_get_name(buf) == name then
+      return buf
+    end
+  end
+end
+
+-- This function is used instead of the `:edit <filename>` builtin command so that we can
+-- explicitly control the name of the buffer.
+--
+-- The right hand side buffer should inherit the name of the file at the cwd so that it
+-- works correctly with things like lsp client initialization.
+--
+-- The left hand side should look similar with the exception of a hunk:// suffix and a
+-- `nofile` buftype
+local function create_buffer(params)
+  local name = vim.fn.getcwd() .. "/" .. params.change.filepath
+
+  local bufopts = {
+    buftype = "nowrite",
+    modifiable = false,
+    modified = false,
+    readonly = true,
+  }
+
+  if params.side == "left" then
+    name = "hunk://" .. name
+    bufopts.buftype = "nofile"
+  end
+
+  local buf = get_buf_by_name(name)
+  if buf then
+    return buf
+  end
+
+  buf = vim.api.nvim_create_buf(false, false)
+
+  local lines = api.fs.read_file_as_lines(params.change[params.side .. "_filepath"])
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+  for key, value in pairs(bufopts) do
+    vim.api.nvim_set_option_value(key, value, {
+      buf = buf,
+    })
+  end
+
+  vim.api.nvim_buf_set_name(buf, name)
+
+  return buf
+end
+
 function M.create(window, params)
   vim.api.nvim_set_current_win(window)
-  vim.cmd("diffoff")
-  vim.cmd("edit " .. params.change[params.side .. "_filepath"])
-  vim.cmd("diffthis")
 
-  local buf = vim.api.nvim_get_current_buf()
+  vim.cmd("diffoff")
+
+  local buf = create_buffer(params)
+
+  vim.api.nvim_buf_call(buf, function()
+    vim.cmd("filetype detect")
+    vim.cmd("doautocmd BufReadPost")
+  end)
+
+  vim.api.nvim_win_set_buf(window, buf)
+
+  vim.cmd("diffthis")
 
   local File = {
     buf = buf,
@@ -18,13 +80,6 @@ function M.create(window, params)
     side = params.side,
     change = params.change,
   }
-
-  vim.api.nvim_set_option_value("modifiable", false, {
-    buf = buf,
-  })
-  vim.api.nvim_set_option_value("readonly", true, {
-    buf = buf,
-  })
 
   for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_line)) do
     vim.keymap.set("n", chord, function()
