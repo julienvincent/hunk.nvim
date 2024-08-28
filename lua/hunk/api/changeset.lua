@@ -67,22 +67,22 @@ local function write_change(change, output_dir)
   local output_file = output_dir .. "/" .. change.filepath
 
   if change.type == "deleted" and not change.selected and not any_selected then
-    vim.fn.system("cp " .. change.left_filepath .. " " .. output_file)
+    fs.copy_file(change.left_filepath, output_file)
     return
   end
 
   if change.type == "deleted" and change.selected then
-    vim.fn.system("rm " .. output_file)
+    fs.rm_file(output_file)
     return
   end
 
   if change.type == "added" and not change.selected and not any_selected then
-    vim.fn.system("rm " .. output_file)
+    fs.rm_file(output_file)
     return
   end
 
   if change.selected and change.type ~= "deleted" then
-    vim.fn.system("cp " .. change.right_filepath .. " " .. output_file)
+    fs.copy_file(change.right_filepath, output_file)
     return
   end
 
@@ -94,7 +94,7 @@ local function write_change(change, output_dir)
     return
   end
 
-  vim.fn.system("cp " .. change.left_filepath .. " " .. output_file)
+  fs.copy_file(change.left_filepath, output_file)
 end
 
 function M.write_changeset(changeset, output_dir)

@@ -25,6 +25,61 @@ describe("output", function()
     end)
   end)
 
+  it("should not delete files that aren't selected", function()
+    fixtures.with_workspace(function(workspace)
+      fixtures.prepare_simple_workspace(workspace)
+
+      local changeset = api.changeset.load_changeset(workspace.left, workspace.right)
+
+      api.changeset.write_changeset(changeset, workspace.output)
+
+      local files = fixtures.read_dir(workspace.output)
+
+      assert.are.same({
+        modified = {
+          "a",
+          "b",
+          "c",
+        },
+        deleted = {
+          "a",
+          "b",
+          "c",
+        },
+      }, files)
+    end)
+  end)
+
+  it("should not delete files that aren't selected", function()
+    fixtures.with_workspace(function(workspace)
+      fixtures.prepare_workspace(workspace, {
+        ["nested/deleted/file"] = { "a", "b", "c" },
+      }, {
+        ["nested/added/file"] = { "a", "b", "c" },
+      })
+
+      local changeset = api.changeset.load_changeset(workspace.left, workspace.right)
+
+      changeset["nested/added/file"].selected = true
+      api.changeset.write_changeset(changeset, workspace.output)
+
+      local files = fixtures.read_dir(workspace.output)
+
+      assert.are.same({
+        ["nested/added/file"] = {
+          "a",
+          "b",
+          "c",
+        },
+        ["nested/deleted/file"] = {
+          "a",
+          "b",
+          "c",
+        },
+      }, files)
+    end)
+  end)
+
   it("should apply only selected lines", function()
     fixtures.with_workspace(function(workspace)
       fixtures.prepare_simple_workspace(workspace)
@@ -78,7 +133,7 @@ describe("output", function()
         modified = {
           "a",
           "b",
-          "c"
+          "c",
         },
         added = {
           "a",
@@ -109,7 +164,7 @@ describe("output", function()
         modified = {
           "a",
           "b",
-          "c"
+          "c",
         },
         added = {
           "a",

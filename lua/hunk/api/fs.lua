@@ -38,6 +38,15 @@ function M.make_parents(file_path)
   vim.fn.mkdir(parent_dir, "p")
 end
 
+function M.copy_file(src, dst)
+  M.make_parents(dst)
+  vim.fn.system({ "cp", src, dst })
+end
+
+function M.rm_file(file)
+  vim.fn.system({ "rm", file })
+end
+
 function M.write_file(file_path, content)
   M.make_parents(file_path)
 
