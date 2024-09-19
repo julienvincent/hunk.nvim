@@ -156,25 +156,24 @@ function M.start(left, right, output)
     output = output,
   }
 
-  local left_file, right_file, tree
-
-  tree = ui.tree.create({
+  local left_file, right_file
+  local tree = ui.tree.create({
     winid = layout.tree,
     changeset = changeset,
-    on_open = function(change)
-      left_file, right_file = open_file(layout, tree, change)
+    on_open = function(change, opts)
+      left_file, right_file = open_file(layout, opts.tree, change)
       vim.api.nvim_set_current_win(layout.right)
     end,
-    on_preview = function(change)
-      left_file, right_file = open_file(layout, tree, change)
+    on_preview = function(change, opts)
+      left_file, right_file = open_file(layout, opts.tree, change)
       vim.api.nvim_set_current_win(layout.tree)
     end,
-    on_toggle = function(change)
+    on_toggle = function(change, opts)
       toggle_file(change)
 
       left_file.render()
       right_file.render()
-      tree.render()
+      opts.tree.render()
     end,
   })
 

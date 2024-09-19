@@ -184,11 +184,13 @@ function M.create(opts)
     apply_signs(tree, buf)
   end
 
+  local callback_opts = { tree = Component }
+
   for _, chord in ipairs(utils.into_table(config.keys.tree.open_file)) do
     vim.keymap.set("n", chord, function()
       local node = tree:get_node()
       if node.type == "file" then
-        opts.on_open(node.change)
+        opts.on_open(node.change, callback_opts)
       end
     end, { buffer = buf })
   end
@@ -197,7 +199,7 @@ function M.create(opts)
     vim.keymap.set("n", chord, function()
       local node = tree:get_node()
       if node.type == "file" then
-        opts.on_preview(node.change)
+        opts.on_preview(node.change, callback_opts)
       end
       if node.type == "dir" and not node:is_expanded() then
         node:expand()
@@ -220,13 +222,13 @@ function M.create(opts)
     vim.keymap.set("n", chord, function()
       local node = tree:get_node()
       if node.type == "file" then
-        opts.on_toggle(node.change)
+        opts.on_toggle(node.change, callback_opts)
         return
       end
 
       local changeset = get_changeset_recursive(tree, node)
       for _, change in ipairs(changeset) do
-        opts.on_toggle(change)
+        opts.on_toggle(change, callback_opts)
       end
     end, { buffer = buf })
   end
@@ -252,7 +254,7 @@ function M.create(opts)
       vim.api.nvim_win_set_cursor(opts.winid, { selected_linenr, 0 })
     end
 
-    opts.on_preview(selected_file.change)
+    opts.on_preview(selected_file.change, callback_opts)
   end
 
   return Component
