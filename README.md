@@ -31,6 +31,9 @@ the `right` directory if no output is provided) to match your selection.
 ```lua
 {
   "julienvincent/hunk.nvim",
+  dependencies = {
+    "MunifTanjim/nui.nvim"
+  },
   cmd = { "DiffEditor" },
   config = function()
     require("hunk").setup()
