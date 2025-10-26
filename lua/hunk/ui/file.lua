@@ -220,9 +220,9 @@ function M.create(window, params)
         local is_selected = params.change.selected_lines[params.side][i]
         local sign
         if is_selected then
-          sign = api.signs.signs.selected
+          sign = api.signs.signs[params.side .. "_selected"]
         else
-          sign = api.signs.signs.deselected
+          sign = api.signs.signs[params.side .. "_deselected"]
         end
         api.signs.place_sign(buf, sign, i)
       end

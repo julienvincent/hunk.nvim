@@ -2,12 +2,20 @@ local config = require("hunk.config")
 
 local M = {
   signs = {
-    selected = {
-      name = "HunkLineSelected",
+    left_selected = {
+      name = "HunkLineLeftSelected",
       hl = "HunkSignSelected",
     },
-    deselected = {
-      name = "HunkLineDeselected",
+    left_deselected = {
+      name = "HunkLineLeftDeselected",
+      hl = "HunkSignDeselected",
+    },
+    right_selected = {
+      name = "HunkLineRightSelected",
+      hl = "HunkSignSelected",
+    },
+    right_deselected = {
+      name = "HunkLineRightDeselected",
       hl = "HunkSignDeselected",
     },
     partially_selected = {
@@ -33,14 +41,24 @@ end
 function M.define_signs()
   vim.fn.sign_define({
     {
-      name = M.signs.selected.name,
-      text = config.icons.selected,
-      texthl = M.signs.selected.hl,
+      name = M.signs.left_selected.name,
+      text = config.icons.left.selected,
+      texthl = M.signs.left_selected.hl,
     },
     {
-      name = M.signs.deselected.name,
-      text = config.icons.deselected,
-      texthl = M.signs.deselected.hl,
+      name = M.signs.left_deselected.name,
+      text = config.icons.left.deselected,
+      texthl = M.signs.left_deselected.hl,
+    },
+    {
+      name = M.signs.right_selected.name,
+      text = config.icons.right.selected,
+      texthl = M.signs.right_selected.hl,
+    },
+    {
+      name = M.signs.right_deselected.name,
+      text = config.icons.right.deselected,
+      texthl = M.signs.right_deselected.hl,
     },
     {
       name = M.signs.partially_selected.name,
