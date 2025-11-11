@@ -32,6 +32,9 @@ the `right` directory if no output is provided) to match your selection.
 {
   "julienvincent/hunk.nvim",
   cmd = { "DiffEditor" },
+  dependencies = {
+      "MunifTanjim/nui.nvim",
+  },
   config = function()
     require("hunk").setup()
   end,
