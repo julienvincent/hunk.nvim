@@ -151,25 +151,6 @@ local function open_file(layout, tree, change)
   local left_file
   local right_file
 
-  ---@param direction "prev" | "next"
-  local function navigate_to_file(direction)
-    local current_idx = tree.get_file_index(left_file.change.filepath)
-    if not current_idx then
-      return
-    end
-
-    local target_idx = utils.calc_navigate_idx(current_idx, direction, tree.get_file_count())
-    if not target_idx then
-      return
-    end
-
-    local target_change = tree.get_file_by_index(target_idx)
-    local win = vim.api.nvim_get_current_win()
-    open_file(layout, tree, target_change)
-    vim.api.nvim_set_current_win(win)
-    tree.navigate_to_file(target_change.filepath)
-  end
-
   local function on_file_event(event)
     if event.type == "toggle-lines" then
       if event.both_sides then
@@ -202,8 +183,7 @@ local function open_file(layout, tree, change)
     end
 
     if event.type == "navigate-file" then
-      navigate_to_file(event.direction)
-      return
+      tree.navigate_to_file(event.direction)
     end
   end
 
