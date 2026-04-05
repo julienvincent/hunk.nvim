@@ -316,7 +316,7 @@ function M.create(opts)
   end
 
   ---@param direction "prev" | "next"
-  function Component.navigate_to_file(direction)
+  function Component.nav_to_file(direction)
     local current = get_current_file()
     if not current then
       return
@@ -343,13 +343,13 @@ function M.create(opts)
 
   for _, chord in ipairs(utils.into_table(config.keys.tree.prev_file)) do
     map("n", chord, function()
-      Component.navigate_to_file("prev")
+      Component.nav_to_file("prev")
     end, "Go to prev file")
   end
 
   for _, chord in ipairs(utils.into_table(config.keys.tree.next_file)) do
     map("n", chord, function()
-      Component.navigate_to_file("next")
+      Component.nav_to_file("next")
     end, "Go to next file")
   end
 
@@ -378,7 +378,7 @@ function M.create(opts)
   end
 
   ---@param filepath string
-  function Component.navigate_to_filepath(filepath)
+  function Component.nav_to_filepath(filepath)
     local _, linenr = find_node_by_filepath(tree, filepath)
     if linenr then
       vim.api.nvim_win_set_cursor(opts.winid, { linenr, 0 })

@@ -182,8 +182,8 @@ local function open_file(layout, tree, change)
       return
     end
 
-    if event.type == "navigate-file" then
-      tree.navigate_to_file(event.direction)
+    if event.type == "nav-file" then
+      tree.nav_to_file(event.direction)
     end
   end
 

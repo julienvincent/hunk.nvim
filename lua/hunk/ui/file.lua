@@ -213,7 +213,7 @@ function M.create(window, params)
   for _, chord in ipairs(utils.into_table(config.keys.tree.prev_file)) do
     vim.keymap.set("n", chord, function()
       params.on_event({
-        type = "navigate-file",
+        type = "nav-file",
         direction = "prev",
       })
     end, map_opts("Go to prev file"))
@@ -222,7 +222,7 @@ function M.create(window, params)
   for _, chord in ipairs(utils.into_table(config.keys.tree.next_file)) do
     vim.keymap.set("n", chord, function()
       params.on_event({
-        type = "navigate-file",
+        type = "nav-file",
         direction = "next",
       })
     end, map_opts("Go to next file"))
