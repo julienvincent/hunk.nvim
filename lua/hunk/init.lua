@@ -109,7 +109,7 @@ local function toggle_hunk(change, side, line)
   toggle_lines(change, "right", right_lines, not any_selected)
 end
 
-local function set_global_bindings(layout, buf)
+local function set_global_bindings(layout, buf, tree)
   local function map(mode, lhs, rhs, desc)
     vim.keymap.set(mode, lhs, rhs, {
       buffer = buf,
@@ -143,8 +143,18 @@ local function set_global_bindings(layout, buf)
 
   for _, chord in ipairs(utils.into_table(config.keys.global.focus_tree)) do
     map("n", chord, function()
-      vim.api.nvim_set_current_win(layout.tree)
-    end, "Focus hunk.nvim file-tree")
+      tree.toggle()
+    end, "Focus or toggle (for float) hunk.nvim file-tree")
+  end
+
+  -- For the tree buffer in float mode, register close bindings after quit so
+  -- they shadow any overlapping key (e.g. both quit and close bound to <Esc>).
+  if config.ui.tree.use_float and buf == tree.buf then
+    for _, chord in ipairs(utils.into_table(config.ui.tree.float.close)) do
+      map("n", chord, function()
+        tree.close()
+      end, "Close tree float")
+    end
   end
 end
 
@@ -195,8 +205,8 @@ local function open_file(layout, tree, change)
     on_event = on_file_event,
   })
 
-  set_global_bindings(layout, left_file.buf)
-  set_global_bindings(layout, right_file.buf)
+  set_global_bindings(layout, left_file.buf, tree)
+  set_global_bindings(layout, right_file.buf, tree)
 
   return left_file, right_file
 end
@@ -226,6 +236,7 @@ function M.start(left, right, output)
   local left_file, right_file
   local tree = ui.tree.create({
     winid = layout.tree,
+    popup = layout.tree_popup,
     changeset = changeset,
     on_open = function(change, opts)
       left_file, right_file = open_file(layout, opts.tree, change)
@@ -233,7 +244,7 @@ function M.start(left, right, output)
     end,
     on_preview = function(change, opts)
       left_file, right_file = open_file(layout, opts.tree, change)
-      vim.api.nvim_set_current_win(layout.tree)
+      opts.tree.focus()
     end,
     on_toggle = function(change, value, opts)
       toggle_file(change, value)
@@ -246,7 +257,7 @@ function M.start(left, right, output)
 
   tree.render()
 
-  set_global_bindings(layout, tree.buf)
+  set_global_bindings(layout, tree.buf, tree)
 end
 
 --- Setup the plugin with user configuration.

@@ -88,7 +88,25 @@ local M = {
     tree = {
       -- Mode can either be `nested` or `flat`
       mode = "nested",
+      -- Width of the tree (or float). 0 < n <= 1 = fraction of editor width, n > 1 = columns
       width = 35,
+      use_float = false,
+      float = {
+        -- Height of the floating window.
+        -- 0 < n <= 1 = fraction of editor height, n > 1 = lines
+        height = 1.0,
+        -- Border style: nil, "rounded", "single", "double", "solid", "shadow", "none",
+        -- or a custom array of border characters (see nui.popup docs).
+        -- nil: use value of vim.o.winborder
+        border = nil,
+        -- Where to place the float: "left", "right", or "center"
+        -- left/right are top-aligned; center is fully centered.
+        position = "left",
+        -- Padding inside the float border: top/right/bottom/left
+        padding = { left = 1, right = 1 },
+        -- Keys to close the floating tree
+        close = { "<Esc>" },
+      },
     },
     --- Can be either `vertical` or `horizontal`
     layout = "vertical",
@@ -118,8 +136,33 @@ local M = {
   },
 }
 
+local function validate_positive_number(value, config_path)
+  if type(value) ~= "number" or value <= 0 then
+    error("Expected positive number for config entry `" .. config_path .. "`")
+  end
+end
+
+local function validate_enum(value, allowed_values, config_path)
+  for _, allowed in ipairs(allowed_values) do
+    if value == allowed then
+      return
+    end
+  end
+
+  error("Unknown value '" .. tostring(value) .. "' for config entry `" .. config_path .. "`")
+end
+
+local function validate_config(config)
+  validate_enum(config.ui.layout, { "vertical", "horizontal" }, "ui.layout")
+  validate_enum(config.ui.tree.mode, { "nested", "flat" }, "ui.tree.mode")
+  validate_enum(config.ui.tree.float.position, { "left", "right", "center" }, "ui.tree.float.position")
+  validate_positive_number(config.ui.tree.width, "ui.tree.width")
+  validate_positive_number(config.ui.tree.float.height, "ui.tree.float.height")
+end
+
 function M.update_config(new_config)
   local config = vim.tbl_deep_extend("force", M, new_config)
+  validate_config(config)
   for key, value in pairs(config) do
     M[key] = value
   end
