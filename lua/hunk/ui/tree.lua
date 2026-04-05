@@ -284,7 +284,69 @@ function M.create(opts)
     end, "Toggle all hunks in file under cursor")
   end
 
-  config.hooks.on_tree_mount({ buf = buf, tree = tree, opts = opts })
+  local all_files = {}
+  ---@type table<string, integer>
+  local filepath_to_idx = {}
+
+  local function collect_files_from_tree(nodes)
+    for _, node in ipairs(nodes) do
+      if node.type == "file" then
+        table.insert(all_files, node.change)
+        filepath_to_idx[node.change.filepath] = #all_files
+      end
+      if node.children and #node.children > 0 then
+        collect_files_from_tree(node.children)
+      end
+    end
+  end
+
+  local function get_current_file()
+    local current = tree:get_node()
+    if current and current.type == "file" then
+      return current.change
+    end
+    local cursor_line = vim.api.nvim_win_get_cursor(opts.winid)[1]
+    for _, change in ipairs(all_files) do
+      local _, linenr = find_node_by_filepath(tree, change.filepath)
+      if linenr and linenr >= cursor_line then
+        return change
+      end
+    end
+    return all_files[1]
+  end
+
+  ---@param direction "prev" | "next"
+  local function navigate_to_file(direction)
+    local current = get_current_file()
+    if not current then
+      return
+    end
+
+    local current_idx = filepath_to_idx[current.filepath]
+    local target_idx = utils.calculate_navigation_idx(current_idx, direction, #all_files)
+    if not target_idx then
+      return
+    end
+
+    local target_change = all_files[target_idx]
+    local _, linenr = find_node_by_filepath(tree, target_change.filepath)
+    if linenr then
+      vim.api.nvim_win_set_cursor(opts.winid, { linenr, 0 })
+      opts.on_preview(target_change, callback_opts)
+    end
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.tree.prev_file)) do
+    map("n", chord, function()
+      navigate_to_file("prev")
+    end, "Go to prev file")
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.tree.next_file)) do
+    map("n", chord, function()
+      navigate_to_file("next")
+    end, "Go to next file")
+  end
 
   local file_tree
   if config.ui.tree.mode == "nested" then
@@ -298,6 +360,8 @@ function M.create(opts)
   tree:set_nodes(file_tree_to_nodes(file_tree))
   Component.render()
 
+  collect_files_from_tree(file_tree)
+
   local selected_file = file_tree_api.find_first_file_in_tree(file_tree)
   if selected_file then
     local _, selected_linenr = find_node_by_filepath(tree, selected_file.change.filepath)
@@ -307,6 +371,16 @@ function M.create(opts)
 
     opts.on_preview(selected_file.change, callback_opts)
   end
+
+  ---@param filepath string
+  function Component.navigate_to_file(filepath)
+    local _, linenr = find_node_by_filepath(tree, filepath)
+    if linenr then
+      vim.api.nvim_win_set_cursor(opts.winid, { linenr, 0 })
+    end
+  end
+
+  config.hooks.on_tree_mount({ buf = buf, tree = tree, opts = opts })
 
   return Component
 end
