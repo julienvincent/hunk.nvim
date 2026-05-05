@@ -31,7 +31,7 @@ the `right` directory if no output is provided) to match your selection.
 ```lua
 {
   "julienvincent/hunk.nvim",
-  cmd = { "DiffEditor" },
+  cmd = { "DiffEditor", "MergeEditor" },
   config = function()
     require("hunk").setup()
   end,
@@ -80,6 +80,17 @@ hunk.setup({
 
       -- Jump between the left and right diff view
       toggle_focus = { "<Tab>" },
+    },
+
+    merge = {
+      accept = { "a" },
+      accept_left = { "gl" },
+      accept_right = { "gr" },
+      accept_all_left = { "gL" },
+      accept_all_right = { "gR" },
+      automerge = { "gA" },
+      next_hunk = { "]h" },
+      prev_hunk = { "[h" },
     },
   },
 
@@ -258,3 +269,47 @@ To suppress the `JJ-INSTRUCTIONS` file that jujutsu injects into the diff editor
 [ui]
 diff-instructions = false
 ```
+
+### Resolving conflicts with `jj resolve`
+
+hunk.nvim also provides a 3-way merge editor for resolving conflicts via `jj resolve`. This presents a three pane layout
+containing left and right conflict sides along with an editable center pane that starts with the base (common ancestor)
+content. You can accept hunks from either side into the center, or edit the center directly.
+
+```
+┌─────────────┬──────────────┬─────────────┐
+│    $left    │   center     │   $right    │
+│ (readonly)  │ (editable)   │ (readonly)  │
+└─────────────┴──────────────┴─────────────┘
+```
+
+To configure this as your merge tool, add the following to your Jujutsu `config.toml`:
+
+```toml
+[ui]
+merge-editor = ["nvim", "-c", "MergeEditor $base $left $right $output $path"]
+```
+
+**Keybindings in the merge editor:**
+
+| Key            | Context    | Action                               |
+| -------------- | ---------- | ------------------------------------ |
+| `a`            | Left/Right | Accept hunk under cursor into center |
+| `gl`           | Center     | Accept left hunk at cursor           |
+| `gr`           | Center     | Accept right hunk at cursor          |
+| `gA`           | Any pane   | Accept all non-conflicting hunks     |
+| `gL`           | Any pane   | Accept left entirely and quit        |
+| `gR`           | Any pane   | Accept right entirely and quit       |
+| `]h`           | Left/Right | Jump to next pending hunk            |
+| `[h`           | Left/Right | Jump to previous pending hunk        |
+| `<leader><CR>` | Any pane   | Accept merge result and quit         |
+| `q`            | Any pane   | Cancel merge and quit                |
+
+Navigate to a highlighted hunk in the left or right buffer and press `a` to apply it to the center. If both sides have a
+conflicting hunk (same region), accepting the first replaces the base content; accepting the second inserts its content
+below the first.
+
+You can also freely edit the center buffer to manually resolve conflicts.
+
+You can find more info on merge tool configuration in
+[the jujutsu docs](https://docs.jj-vcs.dev/latest/config/#3-way-merge-tools-for-conflict-resolution).

@@ -54,6 +54,7 @@ function M.create_layout()
 
   highlights.set_win_hl(right_diff, {
     "DiffDelete:HunkDiffDeleteDim",
+
     "HunkSignSelected:HunkSignAdd",
     "HunkSignDeselected:HunkSignAdd",
   })

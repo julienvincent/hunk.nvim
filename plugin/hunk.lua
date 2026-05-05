@@ -13,3 +13,14 @@ vim.api.nvim_create_user_command("DiffEditor", function(params)
 end, {
   nargs = "*",
 })
+
+vim.api.nvim_create_user_command("MergeEditor", function(params)
+  local args = params.fargs
+  if #args < 4 then
+    vim.notify("Error: MergeEditor expects arguments (base, left, right, output[, path])", vim.log.levels.ERROR)
+    return
+  end
+  require("hunk.merge").start(args[1], args[2], args[3], args[4], args[5])
+end, {
+  nargs = "*",
+})
