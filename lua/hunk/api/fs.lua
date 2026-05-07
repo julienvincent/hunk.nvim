@@ -63,7 +63,11 @@ function M.read_file_as_lines(file_path)
 end
 
 function M.make_parents(file_path)
-  local parent_dir = file_path:match("(.*/)")
+  local parent_dir = vim.fs.dirname(file_path)
+  if parent_dir == "." or parent_dir == "" then
+    return
+  end
+
   vim.fn.mkdir(parent_dir, "p")
 end
 
