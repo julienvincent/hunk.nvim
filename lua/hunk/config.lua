@@ -17,10 +17,21 @@
 ---@field next_hunk string|string[] Keybinding(s) to jump to next hunk
 ---@field toggle_focus string|string[] Keybinding(s) to toggle focus between left/right
 
+---@class hunk.KeysMerge
+---@field accept string|string[] Keybinding(s) to accept hunk under cursor into center
+---@field accept_left string|string[] Keybinding(s) to accept left hunk from center
+---@field accept_right string|string[] Keybinding(s) to accept right hunk from center
+---@field accept_all_left string|string[] Keybinding(s) to accept left entirely and quit
+---@field accept_all_right string|string[] Keybinding(s) to accept right entirely and quit
+---@field automerge string|string[] Keybinding(s) to accept all non-conflicting hunks
+---@field next_hunk string|string[] Keybinding(s) to jump to next hunk
+---@field prev_hunk string|string[] Keybinding(s) to jump to previous hunk
+
 ---@class hunk.Keys
 ---@field global hunk.KeysGlobal
 ---@field tree hunk.KeysTree
 ---@field diff hunk.KeysDiff
+---@field merge hunk.KeysMerge
 
 ---@class hunk.UiTree
 ---@field mode "nested"|"flat" Tree display mode
@@ -81,6 +92,17 @@ local M = {
 
       -- Jump between the left and right diff view
       toggle_focus = { "<Tab>" },
+    },
+
+    merge = {
+      accept = { "a" },
+      accept_left = { "gl" },
+      accept_right = { "gr" },
+      accept_all_left = { "gL" },
+      accept_all_right = { "gR" },
+      automerge = { "gA" },
+      next_hunk = { "]h" },
+      prev_hunk = { "[h" },
     },
   },
 

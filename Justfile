@@ -70,7 +70,7 @@ run channel="stable": (prepare channel)
   NVIM_DIR=".build/nvim/{{ channel }}"
 
   rm -r $TMPDIR/hunk-nvim-run/ || true
-  cp -a dev/fixture $TMPDIR/hunk-nvim-run/
+  cp -a dev/fixtures/split/default $TMPDIR/hunk-nvim-run/
 
   ./$NVIM_DIR/bin/nvim \
     --noplugin \
@@ -84,7 +84,50 @@ run-local:
   TMPDIR="${TMPDIR:-/tmp}"
 
   rm -r $TMPDIR/hunk-nvim-run/ || true
-  cp -a dev/fixture $TMPDIR/hunk-nvim-run/
+  cp -a dev/fixtures/split/default $TMPDIR/hunk-nvim-run/
 
   nvim \
     -c "DiffEditor $TMPDIR/hunk-nvim-run/left $TMPDIR/hunk-nvim-run/right $TMPDIR/hunk-nvim-run/out"
+
+run-merge channel="stable" fixture="default": (prepare channel)
+  #!/usr/bin/env bash
+  set -eo pipefail
+
+  TMPDIR="${TMPDIR:-/tmp}"
+  NVIM_DIR=".build/nvim/{{ channel }}"
+
+  rm -r $TMPDIR/hunk-nvim-merge/ || true
+  mkdir -p $TMPDIR/hunk-nvim-merge/
+  cp dev/fixtures/merge/{{ fixture }}/base.lua $TMPDIR/hunk-nvim-merge/base.lua
+  cp dev/fixtures/merge/{{ fixture }}/left.lua $TMPDIR/hunk-nvim-merge/left.lua
+  cp dev/fixtures/merge/{{ fixture }}/right.lua $TMPDIR/hunk-nvim-merge/right.lua
+  touch $TMPDIR/hunk-nvim-merge/output.lua
+
+  ./$NVIM_DIR/bin/nvim \
+    --noplugin \
+    -u tests/config.lua \
+    -c "MergeEditor $TMPDIR/hunk-nvim-merge/base.lua $TMPDIR/hunk-nvim-merge/left.lua $TMPDIR/hunk-nvim-merge/right.lua $TMPDIR/hunk-nvim-merge/output.lua"
+
+  echo ""
+  echo "=== Output ==="
+  cat $TMPDIR/hunk-nvim-merge/output.lua
+
+run-merge-local fixture="default":
+  #!/usr/bin/env bash
+  set -eo pipefail
+
+  TMPDIR="${TMPDIR:-/tmp}"
+
+  rm -r $TMPDIR/hunk-nvim-merge/ || true
+  mkdir -p $TMPDIR/hunk-nvim-merge/
+  cp dev/fixtures/merge/{{ fixture }}/base.lua $TMPDIR/hunk-nvim-merge/base.lua
+  cp dev/fixtures/merge/{{ fixture }}/left.lua $TMPDIR/hunk-nvim-merge/left.lua
+  cp dev/fixtures/merge/{{ fixture }}/right.lua $TMPDIR/hunk-nvim-merge/right.lua
+  touch $TMPDIR/hunk-nvim-merge/output.lua
+
+  nvim \
+    -c "MergeEditor $TMPDIR/hunk-nvim-merge/base.lua $TMPDIR/hunk-nvim-merge/left.lua $TMPDIR/hunk-nvim-merge/right.lua $TMPDIR/hunk-nvim-merge/output.lua"
+
+  echo ""
+  echo "=== Output ==="
+  cat $TMPDIR/hunk-nvim-merge/output.lua
