@@ -44,6 +44,15 @@
 ---@class hunk.Hooks
 ---@field on_tree_mount fun(context: { buf: number, tree: NuiTree, opts: table }) Called after tree buffer is mounted
 ---@field on_diff_mount fun(context: { buf: number, win: number }) Called after diff buffer is mounted
+---@field on_file_opened fun(context: { change: table, session: hunk.Session }) Called when a file is opened from the tree
+---@field on_file_previewed fun(context: { change: table, session: hunk.Session }) Called when a file is previewed from the tree
+---@field on_file_toggled fun(context: { change: table, session: hunk.Session }) Called when a file is toggled in the tree
+---@field on_line_toggled fun(context: { change: table, side: string, lines: number[] }) Called when lines are toggled in a diff view
+---@field on_hunk_toggled fun(context: { change: table, side: string, line: number }) Called when a hunk is toggled in a diff view
+---@field on_hunk_navigated fun(context: { side: string, hunk: table, change: table }) Called when navigating between hunks
+---@field on_focus_changed fun(context: { side: string }) Called when focus switches between left/right diff views
+---@field on_before_accept fun(context: { session: hunk.Session }) Called just before accepting and writing changes
+---@field on_before_quit fun(context: { session: hunk.Session }) Called just before quitting without saving
 
 ---@class hunk.Config
 ---@field keys hunk.Keys
@@ -133,6 +142,24 @@ local M = {
     on_tree_mount = function(_context) end,
     ---@param _context { buf: number, win: number }
     on_diff_mount = function(_context) end,
+    ---@param _context { change: table, session: hunk.Session }
+    on_file_opened = function(_context) end,
+    ---@param _context { change: table, session: hunk.Session }
+    on_file_previewed = function(_context) end,
+    ---@param _context { change: table, session: hunk.Session }
+    on_file_toggled = function(_context) end,
+    ---@param _context { change: table, side: string, lines: number[] }
+    on_line_toggled = function(_context) end,
+    ---@param _context { change: table, side: string, line: number }
+    on_hunk_toggled = function(_context) end,
+    ---@param _context { side: string, hunk: table, change: table }
+    on_hunk_navigated = function(_context) end,
+    ---@param _context { side: string }
+    on_focus_changed = function(_context) end,
+    ---@param _context { session: hunk.Session }
+    on_before_accept = function(_context) end,
+    ---@param _context { session: hunk.Session }
+    on_before_quit = function(_context) end,
   },
 }
 

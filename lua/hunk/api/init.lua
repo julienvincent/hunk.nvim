@@ -4,4 +4,5 @@ return {
   fs = require("hunk.api.fs"),
   signs = require("hunk.api.signs"),
   highlights = require("hunk.api.highlights"),
+  actions = require("hunk.api.actions"),
 }

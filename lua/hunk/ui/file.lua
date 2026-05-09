@@ -1,6 +1,7 @@
 local config = require("hunk.config")
 local utils = require("hunk.utils")
-local api = require("hunk.api")
+local signs = require("hunk.api.signs")
+local fs = require("hunk.api.fs")
 
 local M = {}
 
@@ -58,7 +59,7 @@ local function create_buffer(params)
   if file.symlink then
     lines = { file.symlink }
   else
-    lines = api.fs.read_file_as_lines(file.path)
+    lines = fs.read_file_as_lines(file.path)
   end
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
@@ -182,6 +183,7 @@ function M.create(window, params)
         local hunk = params.change.hunks[#params.change.hunks - i + 1]
         if hunk[params.side][1] < line_num then
           vim.api.nvim_win_set_cursor(0, { hunk[params.side][1], cursor_pos[2] })
+          config.hooks.on_hunk_navigated({ side = params.side, hunk = hunk, change = params.change })
           break
         end
       end
@@ -195,6 +197,7 @@ function M.create(window, params)
       for _, hunk in ipairs(params.change.hunks) do
         if hunk[params.side][1] > line_num then
           vim.api.nvim_win_set_cursor(0, { hunk[params.side][1], cursor_pos[2] })
+          config.hooks.on_hunk_navigated({ side = params.side, hunk = hunk, change = params.change })
           break
         end
       end
@@ -213,18 +216,18 @@ function M.create(window, params)
   config.hooks.on_diff_mount({ buf = buf, win = window })
 
   local function apply_signs()
-    api.signs.clear_signs(buf)
+    signs.clear_signs(buf)
 
     for _, hunk in ipairs(params.change.hunks) do
       for i in utils.hunk_lines(hunk[params.side]) do
         local is_selected = params.change.selected_lines[params.side][i]
         local sign
         if is_selected then
-          sign = api.signs.signs.selected
+          sign = signs.signs.selected
         else
-          sign = api.signs.signs.deselected
+          sign = signs.signs.deselected
         end
-        api.signs.place_sign(buf, sign, i)
+        signs.place_sign(buf, sign, i)
       end
     end
   end

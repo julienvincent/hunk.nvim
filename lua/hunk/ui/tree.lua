@@ -295,6 +295,7 @@ function M.create(opts)
         last_selected_path = node.change.filepath
         Component.close()
         opts.on_open(node.change, callback_opts)
+        config.hooks.on_file_opened({ change = node.change, session = opts.session })
       end
     end, "Open file under cursor")
   end
@@ -307,6 +308,7 @@ function M.create(opts)
       end
       if node.type == "file" then
         opts.on_preview(node.change, callback_opts)
+        config.hooks.on_file_previewed({ change = node.change, session = opts.session })
       end
       if node.type == "dir" and not node:is_expanded() then
         node:expand()
@@ -330,6 +332,7 @@ function M.create(opts)
       local node = tree:get_node()
       if node and node.type == "file" then
         opts.on_toggle(node.change, nil, callback_opts)
+        config.hooks.on_file_toggled({ change = node.change, session = opts.session })
         return
       end
 
