@@ -166,6 +166,17 @@ end
 local M = {}
 
 function M.create(opts)
+  local is_float = config.ui.tree.use_float
+  local builders = {
+    flat = file_tree_api.build_flat_file_tree,
+    nested = file_tree_api.build_file_tree,
+  }
+  local file_tree = builders[config.ui.tree.mode](opts.changeset)
+
+  if is_float and not opts.popup then
+    error("opts.popup is required when use_float is true")
+  end
+
   local tree = NuiTree({
     winid = opts.winid,
     bufnr = vim.api.nvim_win_get_buf(opts.winid),
@@ -214,6 +225,7 @@ function M.create(opts)
   })
 
   local buf = vim.api.nvim_win_get_buf(opts.winid)
+  local last_selected_path = nil
 
   local Component = {
     buf = buf,
@@ -221,6 +233,49 @@ function M.create(opts)
 
   function Component.render()
     tree:render()
+  end
+
+  if is_float then
+    local popup = opts.popup
+
+    function Component.focus()
+      if popup.winid then
+        vim.api.nvim_set_current_win(popup.winid)
+      end
+    end
+
+    function Component.close()
+      if popup.winid then
+        popup:hide()
+      end
+    end
+
+    function Component.toggle()
+      if popup.winid then
+        popup:hide()
+      else
+        popup:show()
+        vim.api.nvim_set_current_win(popup.winid)
+        if last_selected_path then
+          local _, linenr = find_node_by_filepath(tree, last_selected_path)
+          if linenr then
+            vim.api.nvim_win_set_cursor(popup.winid, { linenr, 0 })
+          end
+        end
+      end
+    end
+  else
+    function Component.focus()
+      vim.api.nvim_set_current_win(opts.winid)
+    end
+
+    function Component.close()
+      -- no-op for embedded modes
+    end
+
+    function Component.toggle()
+      vim.api.nvim_set_current_win(opts.winid)
+    end
   end
 
   local callback_opts = { tree = Component }
@@ -237,6 +292,8 @@ function M.create(opts)
     map("n", chord, function()
       local node = tree:get_node()
       if node and node.type == "file" then
+        last_selected_path = node.change.filepath
+        Component.close()
         opts.on_open(node.change, callback_opts)
       end
     end, "Open file under cursor")
@@ -285,15 +342,6 @@ function M.create(opts)
   end
 
   config.hooks.on_tree_mount({ buf = buf, tree = tree, opts = opts })
-
-  local file_tree
-  if config.ui.tree.mode == "nested" then
-    file_tree = file_tree_api.build_file_tree(opts.changeset)
-  elseif config.ui.tree.mode == "flat" then
-    file_tree = file_tree_api.build_flat_file_tree(opts.changeset)
-  else
-    error("Unknown value '" .. config.ui.tree("' for config entry `ui.tree.mode`"))
-  end
 
   tree:set_nodes(file_tree_to_nodes(file_tree))
   Component.render()
