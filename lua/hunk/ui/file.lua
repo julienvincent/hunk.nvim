@@ -210,6 +210,24 @@ function M.create(window, params)
     end, map_opts("Toggle focused window between left/right"))
   end
 
+  for _, chord in ipairs(utils.into_table(config.keys.tree.prev_file)) do
+    vim.keymap.set("n", chord, function()
+      params.on_event({
+        type = "nav-file",
+        direction = "prev",
+      })
+    end, map_opts("Go to prev file"))
+  end
+
+  for _, chord in ipairs(utils.into_table(config.keys.tree.next_file)) do
+    vim.keymap.set("n", chord, function()
+      params.on_event({
+        type = "nav-file",
+        direction = "next",
+      })
+    end, map_opts("Go to next file"))
+  end
+
   config.hooks.on_diff_mount({ buf = buf, win = window })
 
   local function apply_signs()

@@ -90,4 +90,13 @@ function M.any_lines_selected(change)
   return false
 end
 
+function M.calculate_navigation_idx(current_idx, direction, file_count)
+  local delta = direction == "prev" and -1 or 1
+  local target_idx = current_idx + delta
+  if target_idx < 1 or target_idx > file_count then
+    return nil
+  end
+  return target_idx
+end
+
 return M

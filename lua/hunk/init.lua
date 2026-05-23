@@ -190,6 +190,11 @@ local function open_file(layout, tree, change)
         win = right_file.win
       end
       vim.api.nvim_set_current_win(win)
+      return
+    end
+
+    if event.type == "nav-file" then
+      tree.nav_to_file(event.direction)
     end
   end
 

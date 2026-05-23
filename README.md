@@ -67,6 +67,9 @@ hunk.setup({
       open_file = { "<Cr>" },
 
       toggle_file = { "a" },
+
+      prev_file = { "[f" },
+      next_file = { "]f" },
     },
 
     diff = {
