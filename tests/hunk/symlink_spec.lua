@@ -4,7 +4,7 @@ local fs = require("hunk.api.fs")
 local api = require("hunk.api")
 
 local function create_symlink(dst, source)
-  vim.fn.system({ "ln", "-s", source, dst })
+  assert(vim.loop.fs_symlink(source, dst))
 end
 
 local function prepare_symlinks(workspace)

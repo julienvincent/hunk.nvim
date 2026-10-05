@@ -23,7 +23,7 @@ end
 -- The left hand side should look similar with the exception of a hunk:// suffix and a
 -- `nofile` buftype
 local function create_buffer(params)
-  local name = vim.fn.getcwd() .. "/" .. params.change.filepath
+  local name = vim.fs.normalize(vim.fn.getcwd() .. "/" .. params.change.filepath)
 
   local bufopts = {
     buftype = "nowrite",

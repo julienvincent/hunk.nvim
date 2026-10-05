@@ -69,11 +69,18 @@ end
 
 function M.move_file(src, dst)
   M.make_parents(dst)
-  vim.fn.system({ "mv", src, dst })
+  local ok, err, code = uv.fs_rename(src, dst)
+  if code == "EXDEV" then
+    -- rename() supports cross-filesystem moves, but cannot move dangling symlinks.
+    assert(vim.fn.rename(src, dst) == 0, "Failed to move " .. src .. " to " .. dst)
+  else
+    assert(ok, err)
+  end
 end
 
 function M.rm_file(file)
-  vim.fn.system({ "rm", file })
+  local ok, err, code = uv.fs_unlink(file)
+  assert(ok or code == "ENOENT", err)
 end
 
 function M.write_file(file_path, content)
