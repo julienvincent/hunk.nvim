@@ -17,9 +17,9 @@ function M.with_workspace(cb)
 
   cb(workspace)
 
-  vim.fn.system("rm -r " .. workspace.left)
-  vim.fn.system("rm -r " .. workspace.right)
-  vim.fn.system("rm -r " .. workspace.output)
+  vim.fn.delete(workspace.left, "rf")
+  vim.fn.delete(workspace.right, "rf")
+  vim.fn.delete(workspace.output, "rf")
 end
 
 M.with_workspace(function(workspace)
