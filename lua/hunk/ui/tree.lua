@@ -102,6 +102,7 @@ function M.create(opts)
   local is_float = config.ui.tree.use_float
   local builders = {
     flat = file_tree_api.build_flat_file_tree,
+    compact = file_tree_api.build_compact_file_tree,
     nested = file_tree_api.build_file_tree,
   }
   local file_tree = builders[config.ui.tree.mode](opts.changeset)

@@ -90,7 +90,7 @@ hunk.setup({
 
   ui = {
     tree = {
-      -- Mode can either be `nested` or `flat`
+      -- Mode can be `nested`, `flat`, or `compact`
       mode = "nested",
       -- Width of the tree (or float). 0 < n <= 1 = fraction of editor width, n > 1 = columns
       width = 35,
@@ -145,6 +145,15 @@ hunk.setup({
 > [!NOTE]
 >
 > You can always press `g?` to get a help menu of the available commands
+
+### File Tree Modes
+
+Set `ui.tree.mode` to choose how changed files are displayed:
+
+- `nested` (default): show each directory as a separate expandable row.
+- `flat`: show files using their full relative paths, without directory rows.
+- `compact`: show directories and files, combining directory-only chains into one expandable row, like GitHub and
+  Diffview. Directories remain separate wherever paths branch or a directory contains files alongside subdirectories.
 
 ### Accepting / Rejecting Changes
 

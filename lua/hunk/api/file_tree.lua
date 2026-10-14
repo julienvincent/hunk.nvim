@@ -64,6 +64,25 @@ function M.build_file_tree(changeset)
   return tree.children
 end
 
+local function compact_directories(nodes)
+  for _, node in ipairs(nodes) do
+    if node.type == "dir" then
+      while #node.children == 1 and node.children[1].type == "dir" do
+        local child = node.children[1]
+        node.name = node.name .. "/" .. child.name
+        node.children = child.children
+      end
+      compact_directories(node.children)
+    end
+  end
+end
+
+function M.build_compact_file_tree(changeset)
+  local nodes = M.build_file_tree(changeset)
+  compact_directories(nodes)
+  return nodes
+end
+
 function M.build_flat_file_tree(changeset)
   local nodes = {}
   for _, change in pairs(changeset) do

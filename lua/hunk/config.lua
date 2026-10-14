@@ -23,7 +23,7 @@
 ---@field diff hunk.KeysDiff
 
 ---@class hunk.UiTree
----@field mode "nested"|"flat" Tree display mode
+---@field mode "nested"|"flat"|"compact" Tree display mode
 ---@field width number Width of the file tree panel
 
 ---@class hunk.Ui
@@ -86,7 +86,7 @@ local M = {
 
   ui = {
     tree = {
-      -- Mode can either be `nested` or `flat`
+      -- Mode can be `nested`, `flat`, or `compact`
       mode = "nested",
       -- Width of the tree (or float). 0 < n <= 1 = fraction of editor width, n > 1 = columns
       width = 35,
@@ -154,7 +154,7 @@ end
 
 local function validate_config(config)
   validate_enum(config.ui.layout, { "vertical", "horizontal" }, "ui.layout")
-  validate_enum(config.ui.tree.mode, { "nested", "flat" }, "ui.tree.mode")
+  validate_enum(config.ui.tree.mode, { "nested", "flat", "compact" }, "ui.tree.mode")
   validate_enum(config.ui.tree.float.position, { "left", "right", "center" }, "ui.tree.float.position")
   validate_positive_number(config.ui.tree.width, "ui.tree.width")
   validate_positive_number(config.ui.tree.float.height, "ui.tree.float.height")
