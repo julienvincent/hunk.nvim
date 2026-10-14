@@ -35,9 +35,9 @@ the `right` directory if no output is provided) to match your selection.
 ```lua
 {
   "julienvincent/hunk.nvim",
-  cmd = { "HunkDiffView", "DiffEditor" },
+  cmd = { "HunkDiffView", "HunkDiffEditor" },
   config = function()
-    require("hunk").setup()
+    require("hunk").setup() -- optional
   end,
 }
 ```
