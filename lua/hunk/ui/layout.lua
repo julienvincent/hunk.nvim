@@ -155,15 +155,10 @@ function M.create_layout()
   highlights.set_win_hl(layout.left, {
     "DiffAdd:HunkDiffAddAsDelete",
     "DiffDelete:HunkDiffDeleteDim",
-
-    "HunkSignSelected:HunkSignDelete",
-    "HunkSignDeselected:HunkSignDelete",
   })
 
   highlights.set_win_hl(layout.right, {
     "DiffDelete:HunkDiffDeleteDim",
-    "HunkSignSelected:HunkSignAdd",
-    "HunkSignDeselected:HunkSignAdd",
   })
 
   vim.api.nvim_set_current_win(layout.tree)

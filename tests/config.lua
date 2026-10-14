@@ -1,6 +1,7 @@
-vim.opt.runtimepath:append("./.build/dependencies/plenary.nvim")
-vim.opt.runtimepath:append("./.build/dependencies/nui.nvim")
-vim.opt.runtimepath:append(".")
+local root = vim.fn.getcwd()
+vim.opt.runtimepath:append(root .. "/.build/dependencies/plenary.nvim")
+vim.opt.runtimepath:append(root .. "/.build/dependencies/nui.nvim")
+vim.opt.runtimepath:append(root)
 
 vim.cmd.runtime({ "plugin/plenary.vim", bang = true })
 vim.cmd.runtime({ "plugin/nui.nvim", bang = true })

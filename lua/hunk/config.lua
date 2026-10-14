@@ -1,5 +1,5 @@
 ---@class hunk.KeysGlobal
----@field quit string|string[] Keybinding(s) to quit (exit with non-zero code)
+---@field quit string|string[] Keybinding(s) to quit (non-zero exit in editors, successful exit in HunkDiffView)
 ---@field accept string|string[] Keybinding(s) to accept the current selection
 ---@field focus_tree string|string[] Keybinding(s) to focus the file tree
 
@@ -42,7 +42,7 @@
 ---@field collapsed string Icon for collapsed tree nodes
 
 ---@class hunk.Hooks
----@field on_tree_mount fun(context: { buf: number, tree: NuiTree, opts: table }) Called after tree buffer is mounted
+---@field on_tree_mount fun(context: { buf: number, win: number, tree: NuiTree, opts: table }) Called after tree buffer is mounted
 ---@field on_diff_mount fun(context: { buf: number, win: number }) Called after diff buffer is mounted
 
 ---@class hunk.Config
@@ -129,7 +129,7 @@ local M = {
   },
 
   hooks = {
-    ---@param _context { buf: number, tree: NuiTree, opts: table }
+    ---@param _context { buf: number, win: number, tree: NuiTree, opts: table }
     on_tree_mount = function(_context) end,
     ---@param _context { buf: number, win: number }
     on_diff_mount = function(_context) end,

@@ -2,6 +2,8 @@ local config = require("hunk.config")
 local utils = require("hunk.utils")
 local api = require("hunk.api")
 local ui = require("hunk.ui")
+local file_ui = require("hunk.diff_editor.file")
+local tree_ui = require("hunk.diff_editor.tree")
 
 local M = {}
 
@@ -193,16 +195,22 @@ local function open_file(layout, tree, change)
     end
   end
 
-  left_file = ui.file.create(layout.left, {
+  local function on_focus(side)
+    on_file_event({ type = "toggle-focus", side = side })
+  end
+
+  left_file = file_ui.create(layout.left, {
     side = "left",
     change = change,
     on_event = on_file_event,
+    on_focus = on_focus,
   })
 
-  right_file = ui.file.create(layout.right, {
+  right_file = file_ui.create(layout.right, {
     side = "right",
     change = change,
     on_event = on_file_event,
+    on_focus = on_focus,
   })
 
   set_global_bindings(layout, left_file.buf, tree)
@@ -225,6 +233,8 @@ function M.start(left, right, output)
   end
   local changeset = api.changeset.load_changeset(left, right)
   local layout = ui.layout.create_layout()
+  file_ui.set_window_highlights(layout.left, "left")
+  file_ui.set_window_highlights(layout.right, "right")
 
   CONTEXT = {
     changeset = changeset,
@@ -234,7 +244,7 @@ function M.start(left, right, output)
   }
 
   local left_file, right_file
-  local tree = ui.tree.create({
+  local tree = tree_ui.create({
     winid = layout.tree,
     popup = layout.tree_popup,
     changeset = changeset,

@@ -1,98 +1,14 @@
 local config = require("hunk.config")
 local utils = require("hunk.utils")
-local api = require("hunk.api")
 
 local M = {}
-
-local function get_buf_by_name(name)
-  local bufs = vim.api.nvim_list_bufs()
-
-  for _, buf in ipairs(bufs) do
-    if vim.api.nvim_buf_get_name(buf) == name then
-      return buf
-    end
-  end
-end
-
--- This function is used instead of the `:edit <filename>` builtin command so that we can
--- explicitly control the name of the buffer.
---
--- The right hand side buffer should inherit the name of the file at the cwd so that it
--- works correctly with things like lsp client initialization.
---
--- The left hand side should look similar with the exception of a hunk:// suffix and a
--- `nofile` buftype
-local function create_buffer(params)
-  local name = vim.fs.normalize(vim.fn.getcwd() .. "/" .. params.change.filepath)
-
-  local bufopts = {
-    buftype = "nowrite",
-    modifiable = false,
-    modified = false,
-    readonly = true,
-    swapfile = false,
-  }
-
-  if params.side == "left" then
-    name = "hunk://" .. name
-    bufopts.buftype = "nofile"
-  end
-
-  local buf = get_buf_by_name(name)
-  if buf then
-    return buf
-  end
-
-  buf = vim.api.nvim_create_buf(false, false)
-
-  local file
-  if params.side == "left" then
-    file = params.change.left_file
-  elseif params.side == "right" then
-    file = params.change.right_file
-  else
-    error("Unknown side " .. params.side)
-  end
-
-  local lines = {}
-  if file.symlink then
-    lines = { file.symlink }
-  else
-    lines = api.fs.read_file_as_lines(file.path)
-  end
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-
-  for key, value in pairs(bufopts) do
-    vim.api.nvim_set_option_value(key, value, {
-      buf = buf,
-    })
-  end
-
-  vim.api.nvim_buf_set_name(buf, name)
-
-  return buf
-end
-
-local function get_selected_lines()
-  local start_line = vim.fn.getpos(".")[2]
-  local end_line = vim.fn.getpos("v")[2]
-
-  -- escape out of visual mode
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc>", true, false, true), "m", false)
-
-  local lines = {}
-  for i = math.min(start_line, end_line), math.max(start_line, end_line) do
-    table.insert(lines, i)
-  end
-  return lines
-end
 
 function M.create(window, params)
   vim.api.nvim_set_current_win(window)
 
   vim.cmd("diffoff")
 
-  local buf = create_buffer(params)
+  local buf = params.buf
 
   vim.api.nvim_buf_call(buf, function()
     vim.cmd("filetype detect")
@@ -118,62 +34,6 @@ function M.create(window, params)
     }
   end
 
-  for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_line)) do
-    vim.keymap.set("n", chord, function()
-      local line = vim.api.nvim_win_get_cursor(window)[1]
-      params.on_event({
-        type = "toggle-lines",
-        lines = { line },
-        file = File,
-      })
-    end, map_opts("Toggle line under cursor"))
-
-    vim.keymap.set("v", chord, function()
-      local lines = get_selected_lines()
-      vim.schedule(function()
-        params.on_event({
-          type = "toggle-lines",
-          lines = lines,
-          file = File,
-        })
-      end)
-    end, map_opts("Toggle selected line(s)"))
-  end
-
-  for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_line_pair)) do
-    vim.keymap.set("n", chord, function()
-      local line = vim.api.nvim_win_get_cursor(window)[1]
-      params.on_event({
-        type = "toggle-lines",
-        lines = { line },
-        file = File,
-        both_sides = true,
-      })
-    end, map_opts("Toggle line pair under cursor (left + right)"))
-
-    vim.keymap.set("v", chord, function()
-      local lines = get_selected_lines()
-      vim.schedule(function()
-        params.on_event({
-          type = "toggle-lines",
-          lines = lines,
-          file = File,
-          both_sides = true,
-        })
-      end)
-    end, map_opts("Toggle selected line pair(s) (left + right)"))
-  end
-
-  for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_hunk)) do
-    vim.keymap.set("n", chord, function()
-      params.on_event({
-        type = "toggle-hunk",
-        line = vim.api.nvim_win_get_cursor(window)[1],
-        file = File,
-      })
-    end, map_opts("Toggle entire hunk under cursor"))
-  end
-
   for _, chord in ipairs(utils.into_table(config.keys.diff.prev_hunk)) do
     vim.keymap.set("n", chord, function()
       local cursor_pos = vim.api.nvim_win_get_cursor(0)
@@ -181,7 +41,8 @@ function M.create(window, params)
       for i, _ in ipairs(params.change.hunks) do
         local hunk = params.change.hunks[#params.change.hunks - i + 1]
         if hunk[params.side][1] < line_num then
-          vim.api.nvim_win_set_cursor(0, { hunk[params.side][1], cursor_pos[2] })
+          local row = math.max(1, math.min(hunk[params.side][1], vim.api.nvim_buf_line_count(buf)))
+          vim.api.nvim_win_set_cursor(0, { row, cursor_pos[2] })
           break
         end
       end
@@ -194,7 +55,8 @@ function M.create(window, params)
       local line_num = cursor_pos[1]
       for _, hunk in ipairs(params.change.hunks) do
         if hunk[params.side][1] > line_num then
-          vim.api.nvim_win_set_cursor(0, { hunk[params.side][1], cursor_pos[2] })
+          local row = math.max(1, math.min(hunk[params.side][1], vim.api.nvim_buf_line_count(buf)))
+          vim.api.nvim_win_set_cursor(0, { row, cursor_pos[2] })
           break
         end
       end
@@ -203,37 +65,14 @@ function M.create(window, params)
 
   for _, chord in ipairs(utils.into_table(config.keys.diff.toggle_focus)) do
     vim.keymap.set("n", chord, function()
-      params.on_event({
-        type = "toggle-focus",
-        side = params.side,
-      })
+      params.on_focus(params.side)
     end, map_opts("Toggle focused window between left/right"))
   end
 
+  if params.on_mount then
+    params.on_mount(File)
+  end
   config.hooks.on_diff_mount({ buf = buf, win = window })
-
-  local function apply_signs()
-    api.signs.clear_signs(buf)
-
-    for _, hunk in ipairs(params.change.hunks) do
-      for i in utils.hunk_lines(hunk[params.side]) do
-        local is_selected = params.change.selected_lines[params.side][i]
-        local sign
-        if is_selected then
-          sign = api.signs.signs.selected
-        else
-          sign = api.signs.signs.deselected
-        end
-        api.signs.place_sign(buf, sign, i)
-      end
-    end
-  end
-
-  function File.render()
-    apply_signs()
-  end
-
-  apply_signs()
 
   return File
 end

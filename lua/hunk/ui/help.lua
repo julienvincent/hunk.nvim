@@ -18,25 +18,26 @@ local function render_commands(lines, commands)
   end
 end
 
-function M.create()
+function M.create(keys)
+  keys = keys or config.keys
   local lines = {}
 
   table.insert(lines, Line({ Text("Global Commands", "HunkHelpTitle") }))
   table.insert(lines, Line())
 
-  render_commands(lines, config.keys.global)
+  render_commands(lines, keys.global)
 
   table.insert(lines, Line())
   table.insert(lines, Line({ Text("Tree View Commands", "HunkHelpTitle") }))
   table.insert(lines, Line())
 
-  render_commands(lines, config.keys.tree)
+  render_commands(lines, keys.tree)
 
   table.insert(lines, Line())
   table.insert(lines, Line({ Text("Diff View Commands", "HunkHelpTitle") }))
   table.insert(lines, Line())
 
-  render_commands(lines, config.keys.diff)
+  render_commands(lines, keys.diff)
 
   local popup = NuiPopup({
     enter = true,

@@ -4,16 +4,20 @@
 
 <div align="center">
   <p>
-    A tool for splitting diffs in Neovim
+    A tool for viewing and splitting diffs in Neovim
   </p>
 </div>
 
-This is a Neovim tool for splitting/editing diffs. It operates over a `left` and `right` directory, producing a diff of
-the two which can subsequently be inspected and modified. The `DiffEditor` allows selecting changes by file, hunk or
-individual line to produce a new partial diff.
+This is a Neovim tool for viewing/splitting/editing diffs. It operates over a `left` and `right` directory, producing a
+diff of the two which can subsequently be inspected and modified. The `DiffEditor` allows selecting changes by file,
+hunk or individual line to produce a new partial diff.
 
-This was primarily built to be used with [jujutsu](https://github.com/jj-vcs/jj) as an alternative diff-editor to it's
+This was primarily built to be used with [Jujutsu](https://github.com/jj-vcs/jj) as an alternative diff-editor to it's
 `:builtin` option, but it's designed generically enough that it can be used for other use cases.
+
+`HunkDiffView` provides a read-only viewer over two directories, with a file tree and side-by-side diff panes. It can
+display Jujutsu's materialized conflicts and the computed comparison trees from `jj diff` and `jj interdiff`. Like the
+editor, it is designed as a generic directory diff tool and so can be used with other tools as well.
 
 To use it you need to give it two to three directories: a `left`, a `right`, and optionally a `output` directory. These
 directories will then be read in and used to produce a set of diffs between the two directories. You will then be
@@ -31,7 +35,7 @@ the `right` directory if no output is provided) to match your selection.
 ```lua
 {
   "julienvincent/hunk.nvim",
-  cmd = { "DiffEditor" },
+  cmd = { "HunkDiffView", "DiffEditor" },
   config = function()
     require("hunk").setup()
   end,
@@ -130,7 +134,7 @@ hunk.setup({
   },
   -- Called right after each window and buffer are created.
   hooks = {
-    ---@param _context { buf: number, tree: NuiTree, opts: table }
+    ---@param _context { buf: number, win: number, tree: NuiTree, opts: table }
     on_tree_mount = function(_context) end,
     ---@param _context { buf: number, win: number }
     on_diff_mount = function(_context) end,
@@ -259,6 +263,8 @@ require("hunk").setup({
 [Jujutsu](https://github.com/jj-vcs/jj) is an alternative VCS that has a focus on working with individual commits and
 their diffs.
 
+### Editing diffs
+
 A lot of commands in jujutsu allow you to select parts of a diff. The tool used to select the diff can be configured via
 their `ui.diff-editor` config option. To use `hunk.nvim` add the following to your jujutsu `config.toml`:
 
@@ -268,6 +274,47 @@ diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
 ```
 
 You can find more info on this config in [the jujutsu docs](https://docs.jj-vcs.dev/latest/config/#editing-diffs).
+
+### Viewing diffs and interdiffs
+
+Configure hunk.nvim as an external directory diff tool:
+
+```toml
+[merge-tools.hunk]
+program = "sh"
+diff-invocation-mode = "dir"
+diff-do-chdir = false
+conflict-marker-style = "snapshot"
+diff-args = [
+  "-c",
+  'exec nvim -c "HunkDiffView $1 $2" </dev/tty >/dev/tty',
+  "hunk-difftool",
+  "$left",
+  "$right",
+]
+```
+
+We wrap Neovim in a shell in order to redirect Neovim's input and output to the terminal. This is necessary as jj
+captures external diff formatters' output.
+
+`diff-do-chdir = false` makes jj supply absolute paths. The shell escapes those paths and passes them directly to
+`HunkDiffView`, supporting spaces and avoiding startup directory browsers that can rename arguments or change Neovim's
+working directory.
+
+```sh
+jj diff -r @ --tool hunk --no-pager
+jj diff --from main --to @ --tool hunk --no-pager
+jj interdiff --from A --to B --tool hunk --no-pager
+```
+
+To make this the default diff formatter, also set:
+
+```toml
+[ui]
+diff-formatter = "hunk"
+# The pager is disabled due to it breaking neovim when used as the diff viewer
+paginate = "never"
+```
 
 ### Suppressing the `JJ-INSTRUCTIONS` file
 
