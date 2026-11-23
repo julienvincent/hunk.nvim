@@ -1,20 +1,90 @@
 local config = require("hunk.config")
 local utils = require("hunk.utils")
 local api = require("hunk.api")
+local fs = require("hunk.api.fs")
 local buffer = require("hunk.ui.buffer")
 local file_ui = require("hunk.ui.file")
 
 local M = {}
 
--- Editor buffers use working-file names for LSP integration and hunk:// names on the left.
-local function create_buffer(params)
-  local name = vim.fs.normalize(vim.fn.getcwd() .. "/" .. params.change.filepath)
-  local buftype = "nowrite"
-  if params.side == "left" then
-    name = "hunk://" .. name
-    buftype = "nofile"
+local pane_buffers = setmetatable({}, { __mode = "k" })
+
+local function find_buffer_by_name(name)
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_get_name(buf) == name then
+      return buf
+    end
   end
-  return buffer.create({ name = name, file = params.change[params.side .. "_file"], buftype = buftype })
+end
+
+-- Right panes prefer the working-file name so LSP can attach. If that name is
+-- already in use, both sides fall back to a hunk:// pane name so the comparison
+-- never reuses someone else's buffer.
+local function buffer_name(side, path)
+  local preferred = side == "left" and "hunk://" .. path or path
+  if not find_buffer_by_name(preferred) then
+    return preferred
+  end
+
+  local index = 0
+  local name
+  repeat
+    index = index + 1
+    name = string.format("hunk://pane/%d/%s/%s", index, side, path)
+  until not find_buffer_by_name(name)
+  return name
+end
+
+local function snapshot_lines(change, side)
+  local file = change[side .. "_file"]
+  if file.symlink then
+    return { file.symlink }
+  end
+
+  local content = change.contents[side]
+  if content == nil then
+    return {}
+  end
+
+  return fs.split_lines(content)
+end
+
+-- Unloaded buffers keep their handle but lose their text. Repopulate from the
+-- snapshot before handing the pane back.
+local function restore_buffer(buf, lines)
+  vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+  vim.api.nvim_set_option_value("modified", false, { buf = buf })
+end
+
+local function create_buffer(params)
+  local change = params.change
+  local side = params.side
+  local buffers = pane_buffers[change]
+  if not buffers then
+    buffers = {}
+    pane_buffers[change] = buffers
+  end
+
+  local existing = buffers[side]
+  if existing and vim.api.nvim_buf_is_valid(existing) then
+    if vim.api.nvim_buf_is_loaded(existing) then
+      return existing
+    end
+
+    restore_buffer(existing, snapshot_lines(change, side))
+    return existing
+  end
+
+  local path = vim.fs.normalize(vim.fn.getcwd() .. "/" .. change.filepath)
+  local buf = buffer.create({
+    name = buffer_name(side, path),
+    lines = snapshot_lines(change, side),
+    buftype = side == "left" and "nofile" or "nowrite",
+  })
+  buffers[side] = buf
+  return buf
 end
 
 local function get_selected_lines()

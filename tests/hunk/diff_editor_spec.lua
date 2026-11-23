@@ -109,6 +109,67 @@ describe("diff editor", function()
     assert.is_truthy(help:match("toggle_line"))
   end)
 
+  it("previews the snapshot when a file changes before it is opened", function()
+    hunk.setup({
+      hooks = {
+        on_tree_mount = function(context)
+          tree_context = context
+          fs.write_file(workspace.right .. "/example.txt", {
+            "zzz first",
+            "context 1",
+            "context 2",
+            "context 3",
+            "context 4",
+            "zzz last",
+          })
+        end,
+      },
+    })
+
+    local left, right = open()
+
+    assert.are.same(left_lines, vim.api.nvim_buf_get_lines(left.buf, 0, -1, false))
+    assert.are.same(right_lines, vim.api.nvim_buf_get_lines(right.buf, 0, -1, false))
+
+    invoke(right.win, "s", 1)
+    assert.are.same({ "new first", "context 1", "context 2", "context 3", "context 4", "old last" }, accept())
+  end)
+
+  it("rebuilds an unloaded pane from the snapshot", function()
+    fs.write_file(workspace.left .. "/other.txt", { "other left" })
+    fs.write_file(workspace.right .. "/other.txt", { "other right" })
+
+    local _, right = open()
+    assert.are.same(right_lines, vim.api.nvim_buf_get_lines(right.buf, 0, -1, false))
+
+    vim.api.nvim_set_current_win(tree_context.win)
+    vim.api.nvim_win_set_cursor(tree_context.win, { 2, 0 })
+    invoke(tree_context.win, "<CR>")
+
+    vim.cmd("bunload! " .. right.buf)
+    assert.is_false(vim.api.nvim_buf_is_loaded(right.buf))
+
+    vim.api.nvim_set_current_win(tree_context.win)
+    vim.api.nvim_win_set_cursor(tree_context.win, { 1, 0 })
+    invoke(tree_context.win, "<CR>")
+
+    assert.is_true(vim.api.nvim_buf_is_loaded(right.buf))
+    assert.are.same(right_lines, vim.api.nvim_buf_get_lines(right.buf, 0, -1, false))
+  end)
+
+  it("keeps an existing working-file buffer separate from the comparison", function()
+    local original_buf = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_set_name(original_buf, workspace.output .. "/example.txt")
+    vim.api.nvim_buf_set_lines(original_buf, 0, -1, false, { "unsaved working copy" })
+
+    local _, right = open()
+
+    assert.are_not.equal(original_buf, right.buf)
+    assert.are.same(right_lines, vim.api.nvim_buf_get_lines(right.buf, 0, -1, false))
+    assert.are.same({ "unsaved working copy" }, vim.api.nvim_buf_get_lines(original_buf, 0, -1, false))
+    assert.is_true(vim.api.nvim_get_option_value("modifiable", { buf = original_buf }))
+  end)
+
   it("selects line pairs on both sides and writes a partial diff", function()
     local left, right = open()
     invoke(right.win, "s", 1)

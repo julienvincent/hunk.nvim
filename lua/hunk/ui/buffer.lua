@@ -10,12 +10,15 @@ function M.create(opts)
   end
 
   local buf = vim.api.nvim_create_buf(false, false)
-  local lines = {}
-  if opts.file then
-    if opts.file.symlink then
-      lines = { opts.file.symlink }
-    else
-      lines = fs.read_file_as_lines(opts.file.path)
+  local lines = opts.lines
+  if lines == nil then
+    lines = {}
+    if opts.file then
+      if opts.file.symlink then
+        lines = { opts.file.symlink }
+      else
+        lines = fs.read_file_as_lines(opts.file.path)
+      end
     end
   end
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)

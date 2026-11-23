@@ -1,15 +1,13 @@
 local utils = require("hunk.utils")
-local fs = require("hunk.api.fs")
 
 local M = {}
 
-function M.diff_file(left, right)
-  if left.symlink or right.symlink then
+-- Nil content means no bytes were captured (a symlink or an unreadable file).
+function M.diff_file(left_content, right_content)
+  if not left_content or not right_content then
     return {}
   end
 
-  local left_content = fs.read_file(left.path) or ""
-  local right_content = fs.read_file(right.path) or ""
   local hunks = vim.diff(left_content, right_content, {
     result_type = "indices",
   })

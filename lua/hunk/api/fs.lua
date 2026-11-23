@@ -54,12 +54,20 @@ function M.read_file(file_path)
   return content
 end
 
-function M.read_file_as_lines(file_path)
-  local content = vim.split(M.read_file(file_path) or "", "\n")
-  if content[#content] == "" then
-    table.remove(content, #content)
+function M.read_link(file_path)
+  return uv.fs_readlink(file_path)
+end
+
+function M.split_lines(content)
+  local lines = vim.split(content, "\n")
+  if lines[#lines] == "" then
+    table.remove(lines, #lines)
   end
-  return content
+  return lines
+end
+
+function M.read_file_as_lines(file_path)
+  return M.split_lines(M.read_file(file_path) or "")
 end
 
 function M.make_parents(file_path)
@@ -83,6 +91,14 @@ function M.rm_file(file)
   assert(ok or code == "ENOENT", err)
 end
 
+function M.write_symlink(file_path, target)
+  M.make_parents(file_path)
+  M.rm_file(file_path)
+
+  local ok, err = uv.fs_symlink(target, file_path)
+  assert(ok, err)
+end
+
 function M.write_file(file_path, content)
   M.make_parents(file_path)
 
@@ -95,6 +111,14 @@ function M.write_file(file_path, content)
     file:write(line .. "\n")
   end
 
+  file:close()
+end
+
+function M.write_bytes(file_path, content)
+  M.make_parents(file_path)
+
+  local file = assert(io.open(file_path, "w"), "Failed to write " .. file_path)
+  file:write(content)
   file:close()
 end
 
