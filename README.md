@@ -9,7 +9,7 @@
 </div>
 
 This is a Neovim tool for viewing/splitting/editing diffs. It operates over a `left` and `right` directory, producing a
-diff of the two which can subsequently be inspected and modified. The `DiffEditor` allows selecting changes by file,
+diff of the two which can subsequently be inspected and modified. The `HunkDiffEditor` allows selecting changes by file,
 hunk or individual line to produce a new partial diff.
 
 This was primarily built to be used with [Jujutsu](https://github.com/jj-vcs/jj) as an alternative diff-editor to it's
@@ -279,7 +279,7 @@ their `ui.diff-editor` config option. To use `hunk.nvim` add the following to yo
 
 ```toml
 [ui]
-diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+diff-editor = ["nvim", "-c", "HunkDiffEditor $left $right $output"]
 ```
 
 You can find more info on this config in [the jujutsu docs](https://docs.jj-vcs.dev/latest/config/#editing-diffs).
