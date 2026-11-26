@@ -69,4 +69,33 @@ describe("symlinks", function()
       end)
     end)
   end)
+
+  it("writes the reviewed target when a selected symlink changed after loading", function()
+    fixtures.with_workspace(function(workspace)
+      create_symlink(workspace.right .. "/link", "reviewed-target")
+      local changeset = api.changeset.load_changeset(workspace.left, workspace.right)
+      changeset.link.selected = true
+
+      vim.fn.delete(workspace.right .. "/link")
+      create_symlink(workspace.right .. "/link", "new-target")
+
+      api.changeset.write_changeset(changeset, workspace.output)
+
+      assert.are.equal("reviewed-target", vim.loop.fs_readlink(workspace.output .. "/link"))
+    end)
+  end)
+
+  it("recreates the reviewed target when a selected symlink was removed after loading", function()
+    fixtures.with_workspace(function(workspace)
+      create_symlink(workspace.right .. "/link", "reviewed-target")
+      local changeset = api.changeset.load_changeset(workspace.left, workspace.right)
+      changeset.link.selected = true
+
+      vim.fn.delete(workspace.right .. "/link")
+
+      api.changeset.write_changeset(changeset, workspace.output)
+
+      assert.are.equal("reviewed-target", vim.loop.fs_readlink(workspace.output .. "/link"))
+    end)
+  end)
 end)
