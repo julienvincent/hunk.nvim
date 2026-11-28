@@ -105,6 +105,16 @@ describe("diff view", function()
     end
   end)
 
+  it("ignores modelines found in the compared files", function()
+    write_file(workspace.left, "flavor.toml", { "# vim:fileencoding=utf-8:foldmethod=marker", "value = 1" })
+    write_file(workspace.right, "flavor.toml", { "# vim:fileencoding=utf-8:foldmethod=marker", "value = 2" })
+    local left, right = open()
+    for _, pane in ipairs({ left, right }) do
+      assert.are.equal("toml", vim.api.nvim_get_option_value("filetype", { buf = pane.buf }))
+      assert.is_false(vim.api.nvim_get_option_value("modeline", { buf = pane.buf }))
+    end
+  end)
+
   it("accepts directory paths from the startup argument list", function()
     write_file(workspace.left, "example", { "left" })
     write_file(workspace.right, "example", { "right" })

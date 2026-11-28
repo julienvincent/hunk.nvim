@@ -12,7 +12,7 @@ function M.create(window, params)
 
   vim.api.nvim_buf_call(buf, function()
     vim.cmd("filetype detect")
-    vim.cmd("doautocmd BufReadPost")
+    vim.cmd("doautocmd <nomodeline> BufReadPost")
   end)
 
   vim.api.nvim_win_set_buf(window, buf)
