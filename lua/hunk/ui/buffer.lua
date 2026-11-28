@@ -22,6 +22,7 @@ function M.create(opts)
 
   for key, value in pairs({
     buftype = opts.buftype or "nofile",
+    modeline = false,
     modifiable = false,
     modified = false,
     readonly = true,
